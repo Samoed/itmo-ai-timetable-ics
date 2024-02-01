@@ -10,7 +10,7 @@
 3. Запустить экспорт
 
    ```bash
-   python main.py --input <path_to_xlsx> --output <path_to_ics>
+   python main.py --file <path_to_xlsx> --output <path_to_ics>
    ```
 
 4. Из папки `output` импортировать из папки output расписание с выбранными предметами в любимый календарь.
