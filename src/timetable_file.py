@@ -83,7 +83,6 @@ class TimetableFile:
                 try:
                     hour, minute = map(int, time.split(":"))
                 except ValueError as e:
-                    print(cell)
                     raise e
 
                 if start_time is None:
@@ -146,7 +145,6 @@ class TimetableFile:
                     title, pair_type, link = self.process_cell(cell)
                     title, parsed_pair_start, parsed_pair_end = self.find_time_in_cell(title)
                     if parsed_pair_start:
-                        print(parsed_pair_start, parsed_pair_end, cell.value)
                         pair_start = pair_start.replace(hour=parsed_pair_start[0], minute=parsed_pair_start[1])
                         pair_end = pair_end.replace(hour=parsed_pair_end[0], minute=parsed_pair_end[1])
                     if title != "":
