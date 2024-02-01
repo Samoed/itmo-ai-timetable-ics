@@ -9,7 +9,7 @@ def export_ics(df: list[tuple[datetime, datetime, str, str | None, str | None]],
         c = Calendar()
 
         for start, end, name, pair_type, link in df:
-            if not (name == course or name[:-3] == course or name[:-4] == course):
+            if name != course:
                 continue
 
             e = Event(
