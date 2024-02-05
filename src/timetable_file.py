@@ -124,10 +124,13 @@ class TimetableFile:
     def parse(self) -> list[tuple[datetime, datetime, str, str | None, str | None]]:
         logger.info("Start parse")
         df = []
-        pair_start = datetime.now()
-        pair_end = datetime.now()
+        pair_start = None
+        pair_end = None
+        current_year = datetime.now().year
         for day_cell in self._get_days():
             day = self.get_first_cell_from_mergedcell_range(day_cell).value
+            if day.year < current_year:
+                raise ValueError(f"Year {day.year} is less than current year {current_year}, date in file {day.date()}, cell range {day_cell}")
 
             for row in self.sheet.iter_rows(
                 min_row=day_cell.min_row,
