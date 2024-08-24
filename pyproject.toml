@@ -1,69 +1,92 @@
-[tool.poetry]
+[project]
 name = "itmo-ai-timetable-ics"
 version = "0.1.0"
-description = ""
-authors = ["Roman Solomatin <36135455+Samoed@users.noreply.github.com>"]
+description = "Default template for PDM package"
+authors = [
+    {name = "Roman Solomatin", email = "36135455+Samoed@users.noreply.github.com"},
+]
+requires-python = ">=3.10"
 readme = "README.md"
+license = {text = "MIT"}
+dependencies = [
+    "ics>=0.7.2",
+    "pytz>=2024.1",
+    "openpyxl>=3.1.5",
+]
 
-[tool.poetry.dependencies]
-python = "^3.10"
-openpyxl = "^3.1.2"
-pytz = "^2023.3.post1"
-ics = "^0.7.2"
-alembic = "^1.12.0"
+[tool.pdm]
+distribution = false
 
+[tool.pdm.dev-dependencies]
+lint = [
+    "ruff>=0.6.2",
+    "pre-commit>=3.8.0",
+]
+typing = [
+    "mypy>=1.11.1",
+    "types-openpyxl>=3.1.5.20240822",
+    "types-pytz>=2024.1.0.20240417",
+]
 
-[tool.poetry.group.dev.dependencies]
-flake8 = "^6.1.0"
-black = "^23.9.1"
-isort = "^5.12.0"
-mypy = "^1.5.1"
-pyupgrade = "^3.10.1"
-types-openpyxl = "^3.1.0.19"
-types-pytz = "^2023.3.0.1"
+[tool.ruff]
+fix = true
+target-version = "py310"
+line-length = 120
+extend-include = ["*.ipynb"]
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[tool.ruff.lint]
+select= [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "RUF", # ruff
+    "N",   # flake8-naming
+#    "ANN", # flake8-annotations
+    "S",   # flake8-bandit
+    "BLE", # flake8-blind-except
+    "A",   # flake8-builtins
+#    "COM", # flake8-trailing-comma
+    "C4",  # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "EM",  # flake8-errmsg
+    "ISC", # flake8-implicit-str-concat
+    "LOG", # flake8-logging
+#    "G",   # flake8-logging-format
+    "PIE", # flake8-pie
+    "INP", # flake8-no-pep420
+    "T20", # flake8-print
+    "PT",  # flake8-pytest-style
+    "RET", # flake8-return
+    "SIM", # flake8-simplify
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "PL",  # pylint
+    "NPY", # NumPy-specific rules
+#    "FAST", # fastapi
+#    "TCH", # flake8-type-checking
+#    "TID", # flake8-tidy-imports
+#    "D",   # pydocstyle
+]
+ignore = [
+    "RUF001",
+    "ISC001",
+]
 
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F405", "F403", "D"]
 
-[tool.isort]
-profile = "black"
-combine_as_imports = true
-skip_gitignore = true
-py_version = 310
-
-# https://github.com/tiangolo/sqlmodel/blob/main/pyproject.toml
 [tool.mypy]
 python_version = "3.10"
-# --strict
-disallow_any_generics = true
-disallow_subclassing_any = true
-disallow_untyped_calls = true
-disallow_untyped_defs = true
-disallow_incomplete_defs = true
-check_untyped_defs = true
-disallow_untyped_decorators = true
-no_implicit_optional = true
+strict = true
 warn_redundant_casts = true
-warn_unused_ignores = true
-warn_return_any = true
-strict_equality = true
-
+# plugins = ["numpy.typing.mypy_plugin"]
 
 [[tool.mypy.overrides]]
 module = [
-    "ics",
+    "scipy",
+    "sklearn",
 ]
 ignore_missing_imports = true
-
-[tool.black]
-line-length = 120
-target-version = ['py310']
-preview = true
-exclude = '''
-/(
-    .git
-  | .venv
-)/
-'''

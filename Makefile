@@ -1,23 +1,45 @@
-# https://github.com/samuelcolvin/pydantic/blob/master/Makefile
 .DEFAULT_GOAL := all
-poetry = poetry run
-isort = isort src/
-black = black src/
-mypy = mypy src/
-flake8  = flake8 src/
-pyupgrade = pyupgrade --py310-plus
+DIRS = src/
+pdm = pdm run
+mypy = mypy
 
-.PHONY: install-linting
-install-linting:
-	poetry add flake8 black isort mypy pyupgrade -G dev
+.PHONY: install
+install:
+	pdm install -d
+	pre-commit install --install-hooks
 
 .PHONY: format
 format:
-	$(poetry) $(pyupgrade)
-	$(poetry) $(isort)
-	$(poetry) $(black)
-	#$(poetry) $(mypy)
-	$(poetry) $(flake8)
+	pre-commit run
+	$(pdm) ruff format $(DIRS)
+	$(pdm) ruff check $(DIRS)
+	$(pdm) mypy $(DIRS)
+
+
+.PHONY: database
+database:
+	docker compose up database -d
+
+.PHONY: test
+test:
+	$(pdm) pytest --cov=src --cov-report=html
+
+.PHONY: migrate
+migrate:
+	@read -p "Enter migration message: " message; \
+	$(pdm) alembic revision --autogenerate -m "$$message"
+
+.PHONY: downgrade
+downgrade:
+	$(pdm) alembic downgrade -1
+
+.PHONY: upgrade
+upgrade:
+	$(pdm) alembic upgrade +1
+
+.PHONY: upgrade-offline
+upgrade-offline:
+	$(pdm) alembic upgrade head --sql
 
 .PHONY: all
-all: format
+all: format export-dependencies

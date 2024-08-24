@@ -1,0 +1,44 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    -   id: check-yaml
+    -   id: check-toml
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+    -   id: check-docstring-first
+    -   id: check-added-large-files
+    -   id: detect-private-key
+
+-   repo: https://github.com/codespell-project/codespell
+    rev: v2.2.4
+    hooks:
+    -   id: codespell
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.4.4
+  hooks:
+    - id: ruff
+      types_or: [ python, pyi, jupyter ]
+      args: [ --config, pyproject.toml, --fix, --output-format=github]
+
+    - id: ruff
+      types_or: [ python, pyi, jupyter ]
+      args: [ --config, pyproject.toml, --fix ]
+    # Run the formatter.
+    - id: ruff-format
+      types_or: [ python, pyi, jupyter ]
+      args: [ --config, pyproject.toml ]
+
+default_language_version:
+    python: python3.10
+
+# -   repo: local
+#     hooks:
+#     -   id: mypy
+#         name: Mypy
+#         language: python
+#         entry: pdm run mypy
+#         types: [python]
+#         additional_dependencies: ["mypy>=1.7"]
+#         require_serial: true
