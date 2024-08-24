@@ -38,10 +38,17 @@ test = [
 lint = {cmd = [
     "pre-commit", "run", "--all-files",
 ]}
+test = { cmd = [
+    "pytest", "--cov=src", "tests"
+]}
+test_html = { cmd = [
+    "pytest", "--cov=src", "--cov-report=html", "tests"
+]}
+
 
 [tool.pytest.ini_options]
 minversion = "8.0"
-addopts = "-ra" # --cov src/itmo_ai_timetable_ics
+addopts = "-ra" # --cov breaks pycharm test debugger
 testpaths = [
     "tests",
 ]
