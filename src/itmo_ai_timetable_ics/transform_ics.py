@@ -1,6 +1,9 @@
 from pathlib import Path
 
-from ics import Calendar, Event  # type: ignore[attr-defined]
+from ics import (  # type: ignore[attr-defined]  # type: ignore[import-not-found] # mypy on ci can't find ics
+    Calendar,
+    Event,
+)
 
 from .schemes import Pair
 
