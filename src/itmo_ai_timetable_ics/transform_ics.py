@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ics import (  # type: ignore[attr-defined]  # type: ignore[import-not-found] # mypy on ci can't find ics
+from ics import (  # type: ignore # mypy on ci can't find ics
     Calendar,
     Event,
 )
