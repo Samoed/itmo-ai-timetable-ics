@@ -2,21 +2,23 @@ from datetime import datetime
 from typing import ClassVar
 
 import openpyxl
-import pytz
+from dateutil import tz
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.worksheet.merge import MergedCellRange
 
 from .logger import get_logger
+from .schemes import Pair
 
 logger = get_logger(__name__)
-moscow_tz = pytz.timezone("Europe/Moscow")
+timezone = tz.gettz("Europe/Moscow")
 
 
-class TimetableFile:
+class ScheduleParser:
     DAYS_COLUMN = 2  # Column B
     TIMETABLE_OFFSET = 3  # Offset between date and timetable
     TIMETABLE_LEN = 5  # Length of timetable
 
+    # Extra words in cell that contains type of pair
     KEYWORDS: ClassVar[list[str]] = [
         "Экзамен",
         "Зачет",
@@ -74,8 +76,8 @@ class TimetableFile:
         start_time, end_time = time.split("-")
         start_hour, start_minute = map(int, start_time.split(":"))
         end_hour, end_minute = map(int, end_time.split(":"))
-        pair_start = day.replace(hour=start_hour, minute=start_minute).astimezone(pytz.timezone("Europe/Moscow"))
-        pair_end = day.replace(hour=end_hour, minute=end_minute).astimezone(pytz.timezone("Europe/Moscow"))
+        pair_start = day.replace(hour=start_hour, minute=start_minute).astimezone(timezone)
+        pair_end = day.replace(hour=end_hour, minute=end_minute).astimezone(timezone)
         return pair_start, pair_end
 
     def find_time_in_cell(self, cell: str) -> tuple[str, tuple[int, int] | None, tuple[int, int] | None]:
@@ -91,20 +93,21 @@ class TimetableFile:
         start_time = None
         end_time = None
         cell = cell.replace("-", " ")
-        for time in cell.split(" "):
-            if ":" in time:
-                try:
-                    hour, minute = map(int, time.split(":"))
-                except ValueError as e:
-                    raise e
+        for time in cell.split():
+            if time.find(":") == -1:
+                continue
+            try:
+                hour, minute = map(int, time.split(":"))
+            except ValueError as e:
+                raise e
 
-                if start_time is None:
-                    start_time = (hour, minute)
-                else:
-                    end_time = (hour, minute)
-                cell = cell.replace(time, "")
+            if start_time is None:
+                start_time = (hour, minute)
+            else:
+                end_time = (hour, minute)
+            cell = cell.replace(time, "").strip()
 
-        return cell.strip(), start_time, end_time
+        return cell, start_time, end_time
 
     def find_key_words_in_cell(self, cell_title: str) -> tuple[str, str | None]:
         if not isinstance(cell_title, str):
@@ -138,18 +141,18 @@ class TimetableFile:
 
         return cell_title, key_word, link
 
-    def parse(self) -> list[tuple[datetime | None, datetime | None, str, str | None, str | None]]:
+    def parse(self) -> list[Pair]:
         logger.info("Start parse")
         df = []
-        pair_start = None
-        pair_end = None
+
         for day_cell in self._get_days():
             day = self.get_first_cell_from_mergedcell_range(day_cell).value
             if not isinstance(day, datetime):
                 raise ValueError(f"Day should be datetime, got {type(day)}")
+            day = day.astimezone(timezone)
             # sometimes date can be written with incorrect year
             half_year = 180
-            if (datetime.now(tz=moscow_tz) - day).days > half_year:
+            if (datetime.now(tz=timezone) - day).days > half_year:
                 raise ValueError(f"Date {day.date()} is in previous semester, cell range {day_cell}")
 
             if day_cell.min_col is None or day_cell.max_col is None:
@@ -161,24 +164,29 @@ class TimetableFile:
                 min_col=day_cell.min_col + self.TIMETABLE_OFFSET,
                 max_col=day_cell.max_col + self.TIMETABLE_OFFSET + self.TIMETABLE_LEN,
             ):
-                for cell_num, cell in enumerate(row):
-                    if cell.value is None:
-                        continue
-                    # get time for row
-                    if cell_num == 0:
-                        pair_start, pair_end = self.pair_time(cell, day)
+                if row[0].value is None:
+                    continue
+
+                # get time for row
+                pair_start, pair_end = self.pair_time(row[0], day)
+                for cell in row[1:]:
+                    if cell.value is None or cell.value == "":
                         continue
                     title, pair_type, link = self.process_cell(cell)
                     title, parsed_pair_start, parsed_pair_end = self.find_time_in_cell(title)
-                    if (
-                        parsed_pair_start
-                        and isinstance(pair_start, datetime)
-                        and isinstance(pair_end, datetime)
-                        and parsed_pair_end
-                    ):
+                    if parsed_pair_start and parsed_pair_end:
                         pair_start = pair_start.replace(hour=parsed_pair_start[0], minute=parsed_pair_start[1])
                         pair_end = pair_end.replace(hour=parsed_pair_end[0], minute=parsed_pair_end[1])
-                    if title != "":
-                        df.append((pair_start, pair_end, title, pair_type, link))
+                    if title == "":
+                        continue
+                    df.append(
+                        Pair(
+                            start_time=pair_start,
+                            end_time=pair_end,
+                            name=title,
+                            pair_type=pair_type,
+                            link=link,
+                        )
+                    )
         logger.info("End parse")
         return df

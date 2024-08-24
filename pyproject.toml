@@ -12,10 +12,11 @@ dependencies = [
     "ics>=0.7.2",
     "pytz>=2024.1",
     "openpyxl>=3.1.5",
+    "pydantic>=2.8.2",
+    "pydantic-settings>=2.4.0",
 ]
+scripts = { cli="src.itmo_ai_timetable_ics.cli:main" }
 
-[tool.pdm]
-distribution = false
 
 [tool.pdm.dev-dependencies]
 lint = [
@@ -26,12 +27,27 @@ typing = [
     "mypy>=1.11.1",
     "types-openpyxl>=3.1.5.20240822",
     "types-pytz>=2024.1.0.20240417",
+    "types-python-dateutil>=2.9.0.20240821",
+]
+test = [
+    "pytest>=8.3.2",
+    "pytest-cov>=5.0.0",
 ]
 
 [tool.pdm.scripts]
 lint = {cmd = [
     "pre-commit", "run", "--all-files",
 ]}
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra" # --cov src/itmo_ai_timetable_ics
+testpaths = [
+    "tests",
+]
+log_format = "%(asctime)s %(levelname)s %(message)s"
+log_level = "INFO"
+pythonpath = "itmo_ai_timetable_ics"
 
 [tool.ruff]
 fix = true
@@ -86,11 +102,7 @@ ignore = [
 python_version = "3.10"
 strict = true
 warn_redundant_casts = true
-# plugins = ["numpy.typing.mypy_plugin"]
-
-[[tool.mypy.overrides]]
-module = [
-    "scipy",
-    "sklearn",
+mypy_path = "src/"
+plugins = [
+    "pydantic.mypy",
 ]
-ignore_missing_imports = true

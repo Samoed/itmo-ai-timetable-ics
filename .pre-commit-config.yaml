@@ -38,6 +38,8 @@ repos:
       additional_dependencies:
         - types-openpyxl
         - types-pytz
+        - pydantic
+        - types-python-dateutil
 
 default_language_version:
     python: python3.10
