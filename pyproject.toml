@@ -51,7 +51,7 @@ select= [
 #    "COM", # flake8-trailing-comma
     "C4",  # flake8-comprehensions
     "DTZ", # flake8-datetimez
-    "EM",  # flake8-errmsg
+#    "EM",  # flake8-errmsg
     "ISC", # flake8-implicit-str-concat
     "LOG", # flake8-logging
 #    "G",   # flake8-logging-format

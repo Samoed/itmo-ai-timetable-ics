@@ -1,11 +1,11 @@
 from datetime import datetime
+from typing import ClassVar
 
 import openpyxl
 import pytz
+from logger import get_logger
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.worksheet.merge import MergedCellRange
-
-from logger import get_logger
 
 logger = get_logger(__name__)
 moscow_tz = pytz.timezone("Europe/Moscow")
@@ -16,14 +16,14 @@ class TimetableFile:
     TIMETABLE_OFFSET = 3  # Offset between date and timetable
     TIMETABLE_LEN = 5  # Length of timetable
 
-    KEYWORDS = [
+    KEYWORDS: ClassVar[dict[str, str]] = [
         "Экзамен",
         "Зачет",
         "Дифф. зачет",
     ]
 
-    def __init__(self, path: str, sheet: int):
-        logger.info(f"Open file {path}")
+    def __init__(self, path: str, sheet: int) -> None:
+        logger.info("Open file %s", path)
         wb = openpyxl.load_workbook(path)
         self.sheet = wb.worksheets[sheet]
 
@@ -42,10 +42,12 @@ class TimetableFile:
                 and merged_range.min_row <= merged_cell.row <= merged_range.max_row
             ):
                 return merged_range
+        raise ValueError(f"Can't find merged cell range for cell {merged_cell}")
 
-    def get_first_cell_from_mergedcell_range(self, cell_range: MergedCellRange) -> Cell:
+    def get_first_cell_from_mergedcell_range(self, cell_range: MergedCellRange) -> Cell | None:
         for cell in cell_range.cells:
             return self.sheet.cell(row=cell[0], column=cell[1])
+        raise ValueError(f"Can't find cell in merged cell range {cell_range}")
 
     def find_mergedcell_bounds(self, merged_cell: MergedCell) -> tuple[int, int, int, int]:
         merged_range = self.find_mergedcell_mergerange(merged_cell)
@@ -130,7 +132,8 @@ class TimetableFile:
             day = self.get_first_cell_from_mergedcell_range(day_cell).value
 
             # sometimes date can be written with incorrect year
-            if (datetime.now() - day).days > 180:
+            half_year = 180
+            if (datetime.now(tz=moscow_tz) - day).days > half_year:
                 raise ValueError(f"Date {day.date()} is in previous semester, cell range {day_cell}")
 
             for row in self.sheet.iter_rows(

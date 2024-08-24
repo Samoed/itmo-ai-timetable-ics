@@ -1,9 +1,10 @@
 from datetime import datetime
+from pathlib import Path
 
 from ics import Calendar, Event  # type: ignore[attr-defined]
 
 
-def export_ics(df: list[tuple[datetime, datetime, str, str | None, str | None]], path: str) -> None:
+def export_ics(df: list[tuple[datetime, datetime, str, str | None, str | None]], path: Path) -> None:
     unique_courses = {name for _, _, name, _, _ in df}
     for course in unique_courses:
         c = Calendar()
@@ -21,5 +22,5 @@ def export_ics(df: list[tuple[datetime, datetime, str, str | None, str | None]],
             )
             c.events.add(e)
 
-        with open(f"{path}/{course}.ics", "w") as f:
+        with Path.open(path / f"{course}.ics", "w") as f:
             f.writelines(c.serialize())

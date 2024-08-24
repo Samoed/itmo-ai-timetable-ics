@@ -1,5 +1,5 @@
 import argparse
-import os
+from pathlib import Path
 
 from logger import get_logger
 from timetable_file import TimetableFile
@@ -22,8 +22,9 @@ def main() -> None:
     filepath, output_path, sheet_num = parse_arguments()
     timetable = TimetableFile(filepath, sheet_num)
     df = timetable.parse()
-    if not os.path.exists(output_path):
-        os.mkdir(output_path)
+    output_path = Path(output_path)
+    if not Path.exists(output_path):
+        Path.mkdir(output_path)
     export_ics(df, output_path)
     logger.info(f"Files exported to {output_path}")
 

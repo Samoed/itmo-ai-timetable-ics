@@ -1,4 +1,5 @@
 import logging
+from typing import ClassVar
 
 
 class Logger(logging.Formatter):
@@ -12,7 +13,7 @@ class Logger(logging.Formatter):
     blue = "\x1b[34m"
     reset = "\x1b[0m"
     _format = "%(asctime)s - %(levelname)s - (%(filename)s:%(lineno)d) %(message)s"
-    formats = {
+    formats: ClassVar[dict[int, str]] = {
         logging.DEBUG: white + _format + reset,
         logging.WARNING: yellow + _format + reset,
         logging.INFO: blue + _format + reset,
