@@ -28,6 +28,11 @@ typing = [
     "types-pytz>=2024.1.0.20240417",
 ]
 
+[tool.pdm.scripts]
+lint = {cmd = [
+    "pre-commit", "run", "--all-files",
+]}
+
 [tool.ruff]
 fix = true
 target-version = "py310"

@@ -11,8 +11,7 @@ install:
 
 .PHONY: format
 format:
-	pre-commit run --all-files
-	$(pdm) mypy $(DIRS)
+	pdm run lint
 
 
 .PHONY: database
