@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v4.6.0
     hooks:
     -   id: check-yaml
     -   id: check-toml
@@ -11,12 +11,12 @@ repos:
     -   id: detect-private-key
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.4
+    rev: v2.3.0
     hooks:
     -   id: codespell
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.4.4
+  rev: v0.6.2
   hooks:
     - id: ruff
       types_or: [ python, pyi, jupyter ]
@@ -30,15 +30,14 @@ repos:
       types_or: [ python, pyi, jupyter ]
       args: [ --config, pyproject.toml ]
 
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.11.1
+    hooks:
+    - id: mypy
+      args: [--config-file, pyproject.toml]
+      additional_dependencies:
+        - types-openpyxl
+        - types-pytz
+
 default_language_version:
     python: python3.10
-
-# -   repo: local
-#     hooks:
-#     -   id: mypy
-#         name: Mypy
-#         language: python
-#         entry: pdm run mypy
-#         types: [python]
-#         additional_dependencies: ["mypy>=1.7"]
-#         require_serial: true

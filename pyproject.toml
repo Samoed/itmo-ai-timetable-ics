@@ -32,7 +32,6 @@ typing = [
 fix = true
 target-version = "py310"
 line-length = 120
-extend-include = ["*.ipynb"]
 
 [tool.ruff.lint]
 select= [

@@ -7,12 +7,11 @@ mypy = mypy
 install:
 	pdm install -d
 	pre-commit install --install-hooks
+	pre-commit autoupdate
 
 .PHONY: format
 format:
-	pre-commit run
-	$(pdm) ruff format $(DIRS)
-	$(pdm) ruff check $(DIRS)
+	pre-commit run --all-files
 	$(pdm) mypy $(DIRS)
 
 
@@ -42,4 +41,4 @@ upgrade-offline:
 	$(pdm) alembic upgrade head --sql
 
 .PHONY: all
-all: format export-dependencies
+all: format
