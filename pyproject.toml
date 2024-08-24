@@ -49,6 +49,20 @@ log_format = "%(asctime)s %(levelname)s %(message)s"
 log_level = "INFO"
 pythonpath = "itmo_ai_timetable_ics"
 
+[tool.coverage.run]
+branch = true
+omit = [
+    "__init__.py",
+]
+
+[tool.coverage.paths]
+source = [
+    "src/",
+]
+
+[tool.coverage.report]
+skip_empty = true
+
 [tool.ruff]
 fix = true
 target-version = "py310"
@@ -97,6 +111,7 @@ ignore = [
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F405", "F403", "D"]
+"tests/*.py" = ["S", "PLR2004"]
 
 [tool.mypy]
 python_version = "3.10"
@@ -105,4 +120,7 @@ warn_redundant_casts = true
 mypy_path = "src/"
 plugins = [
     "pydantic.mypy",
+]
+exclude = [
+    "tests",
 ]
