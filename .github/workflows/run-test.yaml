@@ -1,0 +1,29 @@
+name: run tests
+
+on:
+  pull_request:
+    paths:
+    - '**.py'
+    - '**.toml'
+    - '**.lock'
+  push:
+    paths:
+        - '**.py'
+        - '**.toml'
+        - '**.lock'
+    branches:
+      - main
+
+jobs:
+  run-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pdm install -dG test
+      - name: Run tests
+        run: pdm run pytest --cov=src
