@@ -4,7 +4,7 @@ from pathlib import Path
 from ics import Calendar, Event  # type: ignore[attr-defined]
 
 
-def export_ics(df: list[tuple[datetime, datetime, str, str | None, str | None]], path: Path) -> None:
+def export_ics(df: list[tuple[datetime | None, datetime | None, str, str | None, str | None]], path: Path) -> None:
     unique_courses = {name for _, _, name, _, _ in df}
     for course in unique_courses:
         c = Calendar()

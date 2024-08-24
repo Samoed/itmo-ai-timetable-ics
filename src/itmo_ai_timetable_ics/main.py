@@ -1,9 +1,9 @@
 import argparse
 from pathlib import Path
 
-from logger import get_logger
-from timetable_file import TimetableFile
-from transform_ics import export_ics
+from .logger import get_logger
+from .timetable_file import TimetableFile
+from .transform_ics import export_ics
 
 logger = get_logger(__name__)
 
@@ -19,10 +19,10 @@ def parse_arguments() -> tuple[str, str, int]:
 
 def main() -> None:
     logger.info("Start")
-    filepath, output_path, sheet_num = parse_arguments()
+    filepath, output_path_str, sheet_num = parse_arguments()
     timetable = TimetableFile(filepath, sheet_num)
     df = timetable.parse()
-    output_path = Path(output_path)
+    output_path = Path(output_path_str)
     if not Path.exists(output_path):
         Path.mkdir(output_path)
     export_ics(df, output_path)

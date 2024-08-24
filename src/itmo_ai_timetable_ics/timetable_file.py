@@ -3,9 +3,10 @@ from typing import ClassVar
 
 import openpyxl
 import pytz
-from logger import get_logger
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.worksheet.merge import MergedCellRange
+
+from .logger import get_logger
 
 logger = get_logger(__name__)
 moscow_tz = pytz.timezone("Europe/Moscow")
@@ -16,7 +17,7 @@ class TimetableFile:
     TIMETABLE_OFFSET = 3  # Offset between date and timetable
     TIMETABLE_LEN = 5  # Length of timetable
 
-    KEYWORDS: ClassVar[dict[str, str]] = [
+    KEYWORDS: ClassVar[list[str]] = [
         "Экзамен",
         "Зачет",
         "Дифф. зачет",
@@ -40,26 +41,36 @@ class TimetableFile:
             if (
                 merged_range.min_col <= merged_cell.column <= merged_range.max_col
                 and merged_range.min_row <= merged_cell.row <= merged_range.max_row
+                and isinstance(merged_range, MergedCellRange)
             ):
                 return merged_range
         raise ValueError(f"Can't find merged cell range for cell {merged_cell}")
 
-    def get_first_cell_from_mergedcell_range(self, cell_range: MergedCellRange) -> Cell | None:
+    def get_first_cell_from_mergedcell_range(self, cell_range: MergedCellRange) -> Cell:
         for cell in cell_range.cells:
             return self.sheet.cell(row=cell[0], column=cell[1])
         raise ValueError(f"Can't find cell in merged cell range {cell_range}")
 
     def find_mergedcell_bounds(self, merged_cell: MergedCell) -> tuple[int, int, int, int]:
         merged_range = self.find_mergedcell_mergerange(merged_cell)
-        return (
-            merged_range.min_row,
-            merged_range.min_col,
-            merged_range.max_row,
-            merged_range.max_col,
-        )
+        if (
+            merged_range.min_row is not None
+            and merged_range.min_col is not None
+            and merged_range.max_row is not None
+            and merged_range.max_col is not None
+        ):
+            return (
+                merged_range.min_row,
+                merged_range.min_col,
+                merged_range.max_row,
+                merged_range.max_col,
+            )
+        raise ValueError(f"Can't find bounds for merged cell {merged_cell}")
 
     def pair_time(self, cell: Cell, day: datetime) -> tuple[datetime, datetime]:
         time = cell.value
+        if not isinstance(time, str):
+            raise ValueError(f"Time should be string, got {type(time)}")
         start_time, end_time = time.split("-")
         start_hour, start_minute = map(int, start_time.split(":"))
         end_hour, end_minute = map(int, end_time.split(":"))
@@ -96,6 +107,8 @@ class TimetableFile:
         return cell.strip(), start_time, end_time
 
     def find_key_words_in_cell(self, cell_title: str) -> tuple[str, str | None]:
+        if not isinstance(cell_title, str):
+            raise ValueError(f"Cell title should be string, got {type(cell_title)}")
         for key_word in self.KEYWORDS:
             if key_word in cell_title:
                 cell_title = cell_title.replace(key_word, "")
@@ -103,6 +116,8 @@ class TimetableFile:
         return cell_title, None
 
     def clean_cell_value(self, cell: Cell) -> str:
+        if not isinstance(cell.value, str):
+            raise ValueError(f"Cell value should be string, got {type(cell.value)}")
         return cell.value.replace("/", "\\").replace("\n", " ").strip()
 
     def process_cell(self, cell: Cell | MergedCell) -> tuple[str, str | None, str | None]:
@@ -123,18 +138,22 @@ class TimetableFile:
 
         return cell_title, key_word, link
 
-    def parse(self) -> list[tuple[datetime, datetime, str, str | None, str | None]]:
+    def parse(self) -> list[tuple[datetime | None, datetime | None, str, str | None, str | None]]:
         logger.info("Start parse")
         df = []
         pair_start = None
         pair_end = None
         for day_cell in self._get_days():
             day = self.get_first_cell_from_mergedcell_range(day_cell).value
-
+            if not isinstance(day, datetime):
+                raise ValueError(f"Day should be datetime, got {type(day)}")
             # sometimes date can be written with incorrect year
             half_year = 180
             if (datetime.now(tz=moscow_tz) - day).days > half_year:
                 raise ValueError(f"Date {day.date()} is in previous semester, cell range {day_cell}")
+
+            if day_cell.min_col is None or day_cell.max_col is None:
+                raise ValueError(f"Can't find min or max column for cell {day_cell}")
 
             for row in self.sheet.iter_rows(
                 min_row=day_cell.min_row,
@@ -151,7 +170,12 @@ class TimetableFile:
                         continue
                     title, pair_type, link = self.process_cell(cell)
                     title, parsed_pair_start, parsed_pair_end = self.find_time_in_cell(title)
-                    if parsed_pair_start:
+                    if (
+                        parsed_pair_start
+                        and isinstance(pair_start, datetime)
+                        and isinstance(pair_end, datetime)
+                        and parsed_pair_end
+                    ):
                         pair_start = pair_start.replace(hour=parsed_pair_start[0], minute=parsed_pair_start[1])
                         pair_end = pair_end.replace(hour=parsed_pair_end[0], minute=parsed_pair_end[1])
                     if title != "":
