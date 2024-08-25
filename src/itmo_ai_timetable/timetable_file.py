@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import ClassVar
 
 import openpyxl
 from dateutil import tz
@@ -8,22 +7,14 @@ from openpyxl.worksheet.merge import MergedCellRange
 
 from .logger import get_logger
 from .schemes import Pair
+from .settings import Settings
 
 logger = get_logger(__name__)
-timezone = tz.gettz("Europe/Moscow")
 
 
 class ScheduleParser:
-    DAYS_COLUMN = 2  # Column B
-    TIMETABLE_OFFSET = 3  # Offset between date and timetable
-    TIMETABLE_LEN = 5  # Length of timetable
-
-    # Extra words in cell that contains type of pair
-    KEYWORDS: ClassVar[list[str]] = [
-        "Экзамен",
-        "Зачет",
-        "Дифф. зачет",
-    ]
+    settings = Settings()
+    timezone = tz.gettz(settings.timezone)
 
     def __init__(self, path: str, sheet: int) -> None:
         logger.info("Open file %s", path)
@@ -34,7 +25,10 @@ class ScheduleParser:
         days_cells = []
 
         for merged_cell_range in self.sheet.merged_cells.ranges:
-            if merged_cell_range.min_col == self.DAYS_COLUMN and merged_cell_range.max_col == self.DAYS_COLUMN:
+            if (
+                merged_cell_range.min_col == self.settings.days_column
+                and merged_cell_range.max_col == self.settings.days_column
+            ):
                 days_cells.append(merged_cell_range)
         return days_cells
 
@@ -76,8 +70,8 @@ class ScheduleParser:
         start_time, end_time = time.split("-")
         start_hour, start_minute = map(int, start_time.split(":"))
         end_hour, end_minute = map(int, end_time.split(":"))
-        pair_start = day.replace(hour=start_hour, minute=start_minute).astimezone(timezone)
-        pair_end = day.replace(hour=end_hour, minute=end_minute).astimezone(timezone)
+        pair_start = day.replace(hour=start_hour, minute=start_minute).astimezone(self.timezone)
+        pair_end = day.replace(hour=end_hour, minute=end_minute).astimezone(self.timezone)
         return pair_start, pair_end
 
     def find_time_in_cell(self, cell: str) -> tuple[str, tuple[int, int] | None, tuple[int, int] | None]:
@@ -112,7 +106,7 @@ class ScheduleParser:
     def find_key_words_in_cell(self, cell_title: str) -> tuple[str, str | None]:
         if not isinstance(cell_title, str):
             raise ValueError(f"Cell title should be string, got {type(cell_title)}")
-        for key_word in self.KEYWORDS:
+        for key_word in self.settings.keywords:
             if key_word in cell_title:
                 cell_title = cell_title.replace(key_word, "")
                 return cell_title, key_word
@@ -149,10 +143,10 @@ class ScheduleParser:
             day = self.get_first_cell_from_mergedcell_range(day_cell).value
             if not isinstance(day, datetime):
                 raise ValueError(f"Day should be datetime, got {type(day)}")
-            day = day.astimezone(timezone)
+            day = day.astimezone(self.timezone)
             # sometimes date can be written with incorrect year
             half_year = 180
-            if (datetime.now(tz=timezone) - day).days > half_year:
+            if (datetime.now(tz=self.timezone) - day).days > half_year:
                 raise ValueError(f"Date {day.date()} is in previous semester, cell range {day_cell}")
 
             if day_cell.min_col is None or day_cell.max_col is None:
@@ -161,8 +155,8 @@ class ScheduleParser:
             for row in self.sheet.iter_rows(
                 min_row=day_cell.min_row,
                 max_row=day_cell.max_row,
-                min_col=day_cell.min_col + self.TIMETABLE_OFFSET,
-                max_col=day_cell.max_col + self.TIMETABLE_OFFSET + self.TIMETABLE_LEN,
+                min_col=day_cell.min_col + self.settings.timetable_offset,
+                max_col=day_cell.max_col + self.settings.timetable_offset + self.settings.timetable_len,
             ):
                 if row[0].value is None:
                     continue

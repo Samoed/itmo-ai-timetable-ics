@@ -1,0 +1,25 @@
+name: run tests
+
+on:
+  pull_request:
+    paths:
+    - '**.py'
+  push:
+    paths:
+        - '**.py'
+    branches:
+      - main
+
+jobs:
+  run-mypy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PDM
+        uses: pdm-project/setup-pdm@v4
+        with:
+          python-version: '3.10'
+      - name: Install dependencies
+        run: pdm install -dG typing
+      - name: Run tests
+        run: pdm run mypy .

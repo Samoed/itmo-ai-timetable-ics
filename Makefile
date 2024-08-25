@@ -11,7 +11,7 @@ install:
 
 .PHONY: format
 format:
-	pdm run lint
+	pdm run lint_local
 
 
 .PHONY: database

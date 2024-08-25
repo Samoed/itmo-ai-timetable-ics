@@ -30,17 +30,25 @@ repos:
       types_or: [ python, pyi, jupyter ]
       args: [ --config, pyproject.toml ]
 
--   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.1
-    hooks:
-    - id: mypy
-      exclude: ^tests/
-      args: [--config-file, pyproject.toml]
-      additional_dependencies:
-        - types-openpyxl
-        - types-pytz
-        - pydantic
-        - types-python-dateutil
+#    need too many dependencies to work correctly only in pre-commit. Simpler to run in CI
+#-   repo: https://github.com/pre-commit/mirrors-mypy
+#    rev: v1.11.1
+#    hooks:
+#    - id: mypy
+#      exclude: ^tests/
+#      args: [--config-file, pyproject.toml]
+#      additional_dependencies:
+#        - types-openpyxl
+#        - types-pytz
+#        - pydantic
+#        - types-python-dateutil
+#        - sqlalchemy[mypy]
+
+- repo: https://github.com/pdm-project/pdm
+  rev: 2.18.1
+  hooks:
+    - id: pdm-lock-check
+    - id: pdm-sync
 
 default_language_version:
     python: python3.10
