@@ -1,5 +1,5 @@
 [project]
-name = "itmo-ai-timetable-ics"
+name = "itmo-ai-timetable"
 version = "0.1.0"
 description = "Default template for PDM package"
 authors = [
@@ -14,8 +14,9 @@ dependencies = [
     "openpyxl>=3.1.5",
     "pydantic>=2.8.2",
     "pydantic-settings>=2.4.0",
+    "gcsa>=2.3.0",
 ]
-scripts = { cli="src.itmo_ai_timetable_ics.cli:main" }
+scripts = { cli="src.itmo_ai_timetable.cli:main" }
 
 
 [tool.pdm.dev-dependencies]
@@ -54,7 +55,7 @@ testpaths = [
 ]
 log_format = "%(asctime)s %(levelname)s %(message)s"
 log_level = "INFO"
-pythonpath = "itmo_ai_timetable_ics"
+pythonpath = "itmo_ai_timetable"
 
 [tool.coverage.run]
 branch = true

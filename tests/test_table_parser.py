@@ -7,8 +7,8 @@ from dateutil import tz
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
 
-from itmo_ai_timetable_ics.schemes import Pair
-from itmo_ai_timetable_ics.timetable_file import ScheduleParser
+from itmo_ai_timetable.schemes import Pair
+from itmo_ai_timetable.timetable_file import ScheduleParser
 
 # Set up dates and time slots
 timezone = tz.gettz("Europe/Moscow")
