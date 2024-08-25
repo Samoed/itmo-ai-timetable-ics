@@ -1,4 +1,4 @@
-"""init
+"""init.
 
 Revision ID: 83bf6072b0b1
 Revises:

@@ -3,9 +3,7 @@ from typing import ClassVar
 
 
 class Logger(logging.Formatter):
-    """
-    Add colors and formatter for logger
-    """
+    """Add colors and formatter for logger."""
 
     yellow = "\x1b[33m"
     red = "\x1b[31m"

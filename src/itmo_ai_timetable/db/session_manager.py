@@ -4,7 +4,7 @@ from typing import Any, Optional
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
-from ..settings import Settings
+from itmo_ai_timetable.settings import Settings
 
 
 class SessionManager:

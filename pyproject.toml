@@ -87,39 +87,37 @@ line-length = 120
 
 [tool.ruff.lint]
 select= [
-    "E",   # pycodestyle errors
-    "W",   # pycodestyle warnings
-    "F",   # pyflakes
-    "I",   # isort
-    "B",   # flake8-bugbear
-    "UP",  # pyupgrade
-    "RUF", # ruff
-    "N",   # flake8-naming
-#    "ANN", # flake8-annotations
-    "S",   # flake8-bandit
-    "BLE", # flake8-blind-except
-    "A",   # flake8-builtins
-#    "COM", # flake8-trailing-comma
-    "C4",  # flake8-comprehensions
-    "DTZ", # flake8-datetimez
-#    "EM",  # flake8-errmsg
-    "ISC", # flake8-implicit-str-concat
-    "LOG", # flake8-logging
-#    "G",   # flake8-logging-format
-    "PIE", # flake8-pie
-    "INP", # flake8-no-pep420
-    "T20", # flake8-print
-    "PT",  # flake8-pytest-style
-    "RET", # flake8-return
-    "SIM", # flake8-simplify
-    "ARG", # flake8-unused-arguments
-    "PTH", # flake8-use-pathlib
-    "PL",  # pylint
-    "NPY", # NumPy-specific rules
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+    "RUF",  # ruff
+    "N",    # flake8-naming
+    "S",    # flake8-bandit
+    "BLE",  # flake8-blind-except
+    "A",    # flake8-builtins
+    "C4",   # flake8-comprehensions
+    "DTZ",  # flake8-datetimez
+    "ISC",  # flake8-implicit-str-concat
+    "LOG",  # flake8-logging
+    "PIE",  # flake8-pie
+    "INP",  # flake8-no-pep420
+    "T20",  # flake8-print
+    "PT",   # flake8-pytest-style
+    "RET",  # flake8-return
+    "SIM",  # flake8-simplify
+    "ARG",  # flake8-unused-arguments
+    "PTH",  # flake8-use-pathlib
+    "PL",   # pylint
+    "NPY",  # NumPy-specific rules
+    "TCH",  # flake8-type-checking
+    "TID",  # flake8-tidy-imports
 #    "FAST", # fastapi
-#    "TCH", # flake8-type-checking
-#    "TID", # flake8-tidy-imports
-#    "D",   # pydocstyle
+#    "D",    # pydocstyle
+#    "G",    # flake8-logging-format
+#    "EM",   # flake8-errmsg
 ]
 ignore = [
     "RUF001",

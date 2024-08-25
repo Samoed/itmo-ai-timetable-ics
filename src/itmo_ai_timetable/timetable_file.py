@@ -75,8 +75,7 @@ class ScheduleParser:
         return pair_start, pair_end
 
     def find_time_in_cell(self, cell: str) -> tuple[str, tuple[int, int] | None, tuple[int, int] | None]:
-        """
-        Find time in cell
+        """Find time in cell.
 
         "Публичные выступления 1 / Финансовая грамотность 3 17:00 - 19:15" should be 17:00 and 19:15
         """
@@ -180,7 +179,7 @@ class ScheduleParser:
                             name=title,
                             pair_type=pair_type,
                             link=link,
-                        )
+                        ),
                     )
         logger.info("End parse")
         return df
