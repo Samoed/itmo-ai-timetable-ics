@@ -25,5 +25,7 @@ jobs:
           python-version: '3.10'
       - name: Install dependencies
         run: pdm install -dG test
+      - name: Add environment variables
+        run: cp .env.example .env
       - name: Run tests
         run: pdm run pytest --cov=src
