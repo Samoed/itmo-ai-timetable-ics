@@ -1,15 +1,8 @@
 from collections import defaultdict
-from dataclasses import dataclass
 
 import openpyxl
 from openpyxl.cell import MergedCell
 from openpyxl.utils import column_index_from_string
-
-
-@dataclass
-class Selection:
-    name: str
-    courses: list[str]
 
 
 class SelectionParser:

@@ -1,7 +1,6 @@
-import enum
 from datetime import datetime
 
-from sqlalchemy import Enum, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -18,7 +17,11 @@ class Course(Base):
     chat_link: Mapped[str] = mapped_column(nullable=True)
     timetable_id: Mapped[str] = mapped_column(nullable=True)
 
-    users: Mapped[list["User"]] = relationship("User", secondary="user_course", back_populates="courses")
+    # many-to-many relationship to Child, bypassing the `Association` class
+    children: Mapped[list["User"]] = relationship(secondary="user_course", back_populates="parents", viewonly=True)
+
+    # association between Parent -> Association -> Child
+    child_associations: Mapped[list["UserCourse"]] = relationship(back_populates="parent")
     classes: Mapped[list["Class"]] = relationship("Class", back_populates="course")
 
     def __repr__(self) -> str:
@@ -34,7 +37,11 @@ class User(Base):
     user_real_name: Mapped[str] = mapped_column(nullable=True)
     user_tg_id: Mapped[int] = mapped_column(nullable=True)
 
-    courses: Mapped[list["Course"]] = relationship("Course", secondary="user_course", back_populates="users")
+    # many-to-many relationship to Parent, bypassing the `Association` class
+    parents: Mapped[list["Course"]] = relationship(secondary="user_course", back_populates="children", viewonly=True)
+
+    # association between Child -> Association -> Parent
+    parent_associations: Mapped[list["UserCourse"]] = relationship(back_populates="child")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, user_real_name={self.user_real_name}, user_tg_id={self.user_tg_id})>"
@@ -46,18 +53,24 @@ class UserCourse(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), primary_key=True)
     course_id: Mapped[int] = mapped_column(ForeignKey("course.id"), primary_key=True)
 
-    user: Mapped["User"] = relationship("User", back_populates="user_courses")
-    course: Mapped["Course"] = relationship("Course", back_populates="user_courses")
+    # association between Association -> Child
+    child: Mapped["User"] = relationship(back_populates="parent_associations")
+
+    # association between Association -> Parent
+    parent: Mapped["Course"] = relationship(back_populates="child_associations")
 
     def __repr__(self) -> str:
         return f"<UserCourse(user_id={self.user_id}, course_id={self.course_id})>"
 
 
-class ClassStatus(enum.Enum):
-    need_to_delete = "need_to_delete"
-    deleted = "deleted"
-    need_to_update = "need_to_update"
-    synced = "synced"
+class ClassStatusTable(Base):
+    __tablename__ = "class_status"
+
+    name: Mapped[str]
+    classes: Mapped[list["Class"]] = relationship("Class", back_populates="class_status")
+
+    def __repr__(self) -> str:
+        return f"<ClassStatusTable(name={self.name})>"
 
 
 class Class(Base):
@@ -66,7 +79,8 @@ class Class(Base):
     course_id: Mapped[int] = mapped_column(ForeignKey("course.id"))
     start_time: Mapped[datetime]
     end_time: Mapped[datetime]
-    class_status: Mapped[ClassStatus] = mapped_column(Enum(ClassStatus), default=ClassStatus.need_to_update)
+    class_status_id: Mapped[id] = mapped_column(ForeignKey("class_status.id"), nullable=False, default=1)
+    class_status: Mapped["ClassStatusTable"] = relationship("ClassStatusTable", back_populates="classes")
 
     course: Mapped["Course"] = relationship("Course", back_populates="classes")
 
