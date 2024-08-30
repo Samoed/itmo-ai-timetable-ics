@@ -7,8 +7,8 @@ from dateutil import tz
 from openpyxl import Workbook
 from openpyxl.styles import PatternFill
 
+from itmo_ai_timetable.schedule_parser import ScheduleParser
 from itmo_ai_timetable.schemes import Pair
-from itmo_ai_timetable.timetable_file import ScheduleParser
 
 # Set up dates and time slots
 timezone = tz.gettz("Europe/Moscow")
@@ -89,14 +89,14 @@ def test_get_days(timetable_file: ScheduleParser):
 def test_pair_time(timetable_file: ScheduleParser):
     cell = timetable_file.sheet["E7"]
     day = datetime(2024, 2, 5, tzinfo=timezone)
-    start, end = timetable_file.pair_time(cell, day)
+    start, end = timetable_file._get_pair_time(cell, day)
     assert start == datetime(day.year, day.month, day.day, 10, 0, tzinfo=timezone)
     assert end == datetime(day.year, day.month, day.day, 11, 30, tzinfo=timezone)
 
 
 def test_find_time_in_cell(timetable_file: ScheduleParser):
     cell_value = "Машинное обучение на больших данных (Big Data ML)\nЧат курса"
-    cleaned, start, end = timetable_file.find_time_in_cell(cell_value)
+    cleaned, start, end = timetable_file._find_time_in_cell(cell_value)
     assert cleaned == "Машинное обучение на больших данных (Big Data ML)\nЧат курса"
     assert start is None
     assert end is None
@@ -104,14 +104,14 @@ def test_find_time_in_cell(timetable_file: ScheduleParser):
 
 def test_find_key_words_in_cell(timetable_file: ScheduleParser):
     cell_value = "Глубокие генеративные модели (Deep Generative Models)\nЧат курса"
-    cleaned, keyword = timetable_file.find_key_words_in_cell(cell_value)
+    cleaned, keyword = timetable_file._find_key_words_in_cell(cell_value)
     assert cleaned == "Глубокие генеративные модели (Deep Generative Models)\nЧат курса"
     assert keyword is None
 
 
 def test_process_cell(timetable_file: ScheduleParser):
     cell = timetable_file.sheet["F11"]
-    title, keyword, link = timetable_file.process_cell(cell)
+    title, keyword, link = timetable_file._process_cell(cell)
     assert title == "Безопасность ИИ Чат курса"
     assert keyword is None
     assert link is None

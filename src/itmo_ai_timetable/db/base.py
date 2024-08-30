@@ -14,8 +14,8 @@ class Course(Base):
 
     name: Mapped[str]
     meeting_link: Mapped[str] = mapped_column(nullable=True)
-    notion_link: Mapped[str] = mapped_column(nullable=True)
-    tg_chat_link: Mapped[str] = mapped_column(nullable=True)
+    course_info_link: Mapped[str] = mapped_column(nullable=True)
+    chat_link: Mapped[str] = mapped_column(nullable=True)
     timetable_id: Mapped[str] = mapped_column(nullable=True)
 
     users: Mapped[list["User"]] = relationship("User", secondary="user_course", back_populates="courses")
@@ -24,7 +24,7 @@ class Course(Base):
     def __repr__(self) -> str:
         return (
             f"<Course(id={self.id}, name={self.name}, meeting_link={self.meeting_link}, "
-            f"notion_link={self.notion_link}, tg_chat_link={self.tg_chat_link}, timetable_id={self.timetable_id})>"
+            f"notion_link={self.course_info_link}, tg_chat_link={self.chat_link}, timetable_id={self.timetable_id})>"
         )
 
 

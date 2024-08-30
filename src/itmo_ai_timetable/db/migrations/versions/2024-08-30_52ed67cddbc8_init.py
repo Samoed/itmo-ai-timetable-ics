@@ -1,8 +1,8 @@
-"""init.
+"""init
 
-Revision ID: 83bf6072b0b1
+Revision ID: 52ed67cddbc8
 Revises:
-Create Date: 2024-08-25 22:21:49.476864
+Create Date: 2024-08-30 22:46:04.978296
 
 """
 
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "83bf6072b0b1"
+revision: str = "52ed67cddbc8"
 down_revision: str | None = None
 branch_labels: str | Sequence[str] | None = None
 depends_on: str | Sequence[str] | None = None
@@ -24,8 +24,8 @@ def upgrade() -> None:
         "course",
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("meeting_link", sa.String(), nullable=True),
-        sa.Column("notion_link", sa.String(), nullable=True),
-        sa.Column("tg_chat_link", sa.String(), nullable=True),
+        sa.Column("course_info_link", sa.String(), nullable=True),
+        sa.Column("chat_link", sa.String(), nullable=True),
         sa.Column("timetable_id", sa.String(), nullable=True),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
@@ -79,5 +79,3 @@ def downgrade() -> None:
     op.drop_table("user")
     op.drop_table("course")
     # ### end Alembic commands ###
-    # https://github.com/sqlalchemy/alembic/issues/89
-    sa.Enum(name="classstatus").drop(op.get_bind(), checkfirst=False)  # type: ignore[no-untyped-call]

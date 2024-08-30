@@ -2,7 +2,7 @@ import argparse
 from pathlib import Path
 
 from .logger import get_logger
-from .timetable_file import ScheduleParser
+from .schedule_parser import ScheduleParser
 from .transform_ics import export_ics
 
 logger = get_logger(__name__)
