@@ -7,9 +7,9 @@ from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.worksheet.merge import MergedCellRange
 from openpyxl.worksheet.worksheet import Worksheet
 
-from .logger import get_logger
-from .schemes import Pair
-from .settings import Settings
+from itmo_ai_timetable.logger import get_logger
+from itmo_ai_timetable.schemes import Pair
+from itmo_ai_timetable.settings import Settings
 
 logger = get_logger(__name__)
 

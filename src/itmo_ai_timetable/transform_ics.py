@@ -1,8 +1,7 @@
 from pathlib import Path
 
-from ics import Calendar, Event  # type: ignore # mypy on ci can't find ics
-
-from .schemes import Pair
+from ics import Calendar, Event  # type: ignore
+from itmo_ai_timetable.schemes import Pair
 
 
 def export_ics(pairs: list[Pair], path: Path) -> None:
