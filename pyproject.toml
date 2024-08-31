@@ -137,6 +137,10 @@ ignore = [
 "tests/*.py" = ["S", "PLR2004"]
 "src/itmo_ai_timetable/db/migrations/versions/*.py" = ["N999"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["itmo_ai_timetable"]
+known-third-party = ["sqlalchemy", "pydantic", "alembic", "asyncpg", "gcsa", "ics", "openpyxl", "pytz"]
+
 [tool.mypy]
 python_version = "3.10"
 strict = true
