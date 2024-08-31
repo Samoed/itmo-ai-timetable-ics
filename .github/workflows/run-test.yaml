@@ -11,17 +11,17 @@ on:
         - '**.py'
         - '**.toml'
         - '**.lock'
+        - '**.yaml'
     branches:
       - main
 
 jobs:
-  container-job:
-    # Containers must run in Linux based operating systems
+  # Label of the runner job
+  runner-job:
+    # You must use a Linux environment when using service containers or container jobs
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
-    container: python:3.10
 
-    # Service containers to run with `container-job`
+    # Service containers to run with `runner-job`
     services:
       # Label used to access the service container
       postgres:
@@ -29,8 +29,9 @@ jobs:
         image: postgres:16-alpine
         # Provide the password for postgres
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: example
+          POSTGRES_USER: example
+          POSTGRES_PASSWORD: example
         # Set health checks to wait until postgres has started
         options: >-
           --health-cmd pg_isready
