@@ -29,7 +29,6 @@ class Settings(BaseSettings):
 
     @property
     def database_settings(self) -> Any:
-        """Get all settings for connection with database."""
         return {
             "database": self.postgres_db,
             "user": self.postgres_user,
@@ -40,7 +39,6 @@ class Settings(BaseSettings):
 
     @property
     def database_uri(self) -> str:
-        """Get uri for connection with database."""
         return "postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}".format(
             **self.database_settings,
         )
