@@ -1,5 +1,4 @@
 name: run tests
-
 on:
   pull_request:
     paths:
@@ -11,38 +10,27 @@ on:
         - '**.py'
         - '**.toml'
         - '**.lock'
+        - '**.yaml'
     branches:
       - main
-
 jobs:
-  container-job:
-    # Containers must run in Linux based operating systems
+  run-tests:
     runs-on: ubuntu-latest
-    # Docker Hub image that `container-job` executes in
-    container: python:3.10
-
-    # Service containers to run with `container-job`
     services:
-      # Label used to access the service container
       postgres:
-        # Docker Hub image
         image: postgres:16-alpine
-        # Provide the password for postgres
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        # Set health checks to wait until postgres has started
+          POSTGRES_DB: example
+          POSTGRES_USER: example
+          POSTGRES_PASSWORD: example
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          # Maps tcp port 5432 on service container to the host
           - 5432:5432
 
-  run-tests:
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup PDM
