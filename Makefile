@@ -13,14 +13,13 @@ install:
 format:
 	pdm run lint_local
 
-
 .PHONY: database
 database:
 	docker compose up database -d
 
 .PHONY: test
 test:
-	$(pdm) pytest --cov=src --cov-report=html
+	pdm run test_html
 
 .PHONY: migrate
 migrate:

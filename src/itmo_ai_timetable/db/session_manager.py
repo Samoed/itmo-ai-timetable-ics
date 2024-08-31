@@ -42,6 +42,8 @@ class SessionManager:
 def with_async_session(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
+        if "session" in kwargs:
+            return await func(*args, **kwargs)
         session_maker = SessionManager().session_maker
         async with session_maker() as session:
             try:

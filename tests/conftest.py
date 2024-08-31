@@ -1,3 +1,4 @@
+import logging
 from os import environ
 from types import SimpleNamespace
 from uuid import uuid4
@@ -37,12 +38,13 @@ def postgres() -> str:
 
 
 def run_upgrade(connection, cfg):
+    logging.getLogger("alembic").setLevel(logging.CRITICAL)
     cfg.attributes["connection"] = connection
     upgrade(cfg, "head")
 
 
 async def run_async_upgrade(config: Config, database_uri: str):
-    async_engine = create_async_engine(database_uri, echo=True)
+    async_engine = create_async_engine(database_uri, echo=False)
     async with async_engine.begin() as conn:
         await conn.run_sync(run_upgrade, config)
 

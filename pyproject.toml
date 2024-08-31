@@ -37,9 +37,10 @@ typing = [
 test = [
     "pytest>=8.3.2",
     "pytest-cov>=5.0.0",
-    "sqlalchemy-utils>=0.41.2",
     "pytest-async>=0.1.1",
     "pytest-asyncio>=0.24.0",
+    # for creating test db
+    "sqlalchemy-utils>=0.41.2",
     "psycopg2-binary>=2.9.9",
 ]
 
@@ -53,10 +54,10 @@ lint = {cmd = [
     "pre-commit", "run", "--all-files",
 ]}
 test = { cmd = [
-    "pytest", "--cov=src", "tests"
+    "pytest", "--cov=src"
 ]}
 test_html = { cmd = [
-    "pytest", "--cov=src", "--cov-report=html", "tests"
+    "pytest", "--cov=src", "--cov-report=html"
 ]}
 
 
@@ -76,6 +77,7 @@ asyncio_mode = "auto"
 branch = true
 omit = [
     "__init__.py",
+    "src/itmo_ai_timetable/db/migrations/versions/*",
 ]
 
 [tool.coverage.paths]
