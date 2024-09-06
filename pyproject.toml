@@ -43,6 +43,9 @@ test = [
     "sqlalchemy-utils>=0.41.2",
     "psycopg2-binary>=2.9.9",
 ]
+cources_processor = [
+    "pandas>=2.2.2",
+]
 
 [tool.pdm.scripts]
 lint_local.composite = [
@@ -136,6 +139,7 @@ ignore = [
 "__init__.py" = ["F405", "F403", "D"]
 "tests/*.py" = ["S", "PLR2004"]
 "src/itmo_ai_timetable/db/migrations/versions/*.py" = ["N999"]
+"courses_processor/*.py" = ["PTH", "T201", "PLW2901", "RUF003", "INP001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["itmo_ai_timetable"]
@@ -144,7 +148,6 @@ known-third-party = ["sqlalchemy", "pydantic", "alembic", "asyncpg", "gcsa", "ic
 [tool.mypy]
 python_version = "3.10"
 strict = true
-warn_redundant_casts = true
 mypy_path = "src/"
 plugins = [
     "pydantic.mypy",
