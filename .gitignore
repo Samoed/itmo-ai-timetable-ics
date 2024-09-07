@@ -163,3 +163,5 @@ ics/
 *.xlsx
 .pdm-python
 /db/
+*.json
+*.csv

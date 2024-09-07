@@ -50,8 +50,7 @@ class ScheduleParser:
         return day
 
     def _validate_day(self, day: datetime, day_cell: MergedCellRange) -> None:
-        half_year = 180
-        if (datetime.now(tz=self.timezone) - day).days > half_year:
+        if (datetime.now(tz=self.timezone) - day).days > self.settings.max_days_difference:
             raise ValueError(f"Date {day.date()} is in previous semester, cell range {day_cell}")
 
     def _parse_day(self, day: datetime, day_cell: MergedCellRange) -> list[Pair]:
@@ -147,7 +146,7 @@ class ScheduleParser:
             raise ValueError(f"Cell title should be string, got {type(cell_title)}")
         for key_word in self.settings.keywords:
             if key_word in cell_title:
-                return cell_title.replace(key_word, ""), key_word
+                return cell_title.replace(key_word, "").strip(), key_word
         return cell_title, None
 
     def _find_time_in_cell(self, cell: str) -> tuple[str, tuple[int, int] | None, tuple[int, int] | None]:

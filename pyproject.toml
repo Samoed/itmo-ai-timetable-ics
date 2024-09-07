@@ -145,6 +145,9 @@ ignore = [
 known-first-party = ["itmo_ai_timetable"]
 known-third-party = ["sqlalchemy", "pydantic", "alembic", "asyncpg", "gcsa", "ics", "openpyxl", "pytz"]
 
+[tool.ruff.lint.pylint]
+max-args = 10
+
 [tool.mypy]
 python_version = "3.10"
 strict = true

@@ -13,12 +13,11 @@ class Base(DeclarativeBase):
         datetime: TIMESTAMP(timezone=True),
     }
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-
 
 class Course(Base):
     __tablename__ = "course"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     meeting_link: Mapped[str] = mapped_column(nullable=True)
     course_info_link: Mapped[str] = mapped_column(nullable=True)
@@ -42,11 +41,13 @@ class Course(Base):
 class User(Base):
     __tablename__ = "user"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     user_real_name: Mapped[str] = mapped_column(nullable=True)
     user_tg_id: Mapped[int] = mapped_column(nullable=True)
+    studying_course: Mapped[int]  # 1 or 2
 
     # many-to-many relationship to Course, bypassing the `UserCourse` class
-    courses: Mapped[list["Course"]] = relationship(secondary="user_course", back_populates="students", viewonly=True)
+    courses: Mapped[list["Course"]] = relationship(secondary="user_course", back_populates="students")
 
     # association between User -> UserCourse -> Course
     course_enrollments: Mapped[list["UserCourse"]] = relationship(back_populates="student")
@@ -74,6 +75,7 @@ class UserCourse(Base):
 class ClassStatusTable(Base):
     __tablename__ = "class_status"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     classes: Mapped[list["Class"]] = relationship("Class", back_populates="class_status")
 
@@ -91,6 +93,7 @@ def get_class_status_id(status_name: ClassStatus) -> int:
 class Class(Base):
     __tablename__ = "class"
 
+    id: Mapped[int] = mapped_column(primary_key=True)
     course_id: Mapped[int] = mapped_column(ForeignKey("course.id"))
     start_time: Mapped[datetime]
     end_time: Mapped[datetime]

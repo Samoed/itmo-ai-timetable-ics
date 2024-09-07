@@ -17,13 +17,10 @@ class Settings(BaseSettings):
     timetable_offset: int = Field(3, description="Offset between date and timetable")
     timetable_len: int = Field(5, description="Number of columns that relate to timetable")
     keywords: list[str] = Field(
-        [
-            "Экзамен",
-            "Зачет",
-            "Дифф. зачет",
-        ],
+        ["Экзамен", "Лекция", "Зачет", "Семинар", "Защита", "Дифф. зачет"],
         description="Extra words in cell that contains type of pair",
     )
+    max_days_difference: int = Field(180, description="Max days difference between date and today")
 
     timezone: str = "Europe/Moscow"
 

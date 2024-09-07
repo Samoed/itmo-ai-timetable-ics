@@ -24,7 +24,7 @@ async def test_get_or_create_course_existing(session: AsyncSession):
     session.add(existing_course)
     await session.commit()
 
-    result = await Repository.get_or_create_course(course_name, session)
+    result = await Repository.get_course(course_name, session)
 
     assert result.id == existing_course.id
     assert result.name == course_name
@@ -33,7 +33,7 @@ async def test_get_or_create_course_existing(session: AsyncSession):
 async def test_get_or_create_course_new(session: AsyncSession):
     course_name = "New Course"
 
-    result = await Repository.get_or_create_course(course_name, session)
+    result = await Repository.get_course(course_name, session)
 
     assert result.id is not None
     assert result.name == course_name

@@ -1,19 +1,28 @@
 from collections import defaultdict
 
 import openpyxl
+from cleaner import course_name_cleaner
 from openpyxl.cell import MergedCell
 from openpyxl.utils import column_index_from_string
 
 
 class SelectionParser:
-    def __init__(self, file_path: str):
-        self.workbook = openpyxl.load_workbook(file_path)
-        self.sheet = self.workbook.worksheets[1]
-        self.course_row = 3
-        self.start_column = "G"
-        self.end_column = "BB"
-        self.name_column = "A"
-        self.data_start_row = 4
+    def __init__(
+        self,
+        filepath: str,
+        sheet_name: str,
+        course_row: int,
+        first_select_column: str,
+        last_select_column: str,
+        name_column: str = "A",
+    ):
+        self.workbook = openpyxl.load_workbook(filepath)
+        self.sheet = self.workbook[sheet_name]
+        self.course_row = course_row
+        self.start_column = first_select_column
+        self.end_column = last_select_column
+        self.name_column = name_column
+        self.data_start_row = course_row + 1
 
     def parse(self) -> dict[str, list[str]]:
         courses = self._get_courses()
@@ -46,5 +55,5 @@ class SelectionParser:
                 for col, course in courses:
                     cell_value = self.sheet[f"{col}{row[0].row}"].value
                     if cell_value == 1:
-                        matches[name].append(course)
+                        matches[name].append(course_name_cleaner(course))
         return matches

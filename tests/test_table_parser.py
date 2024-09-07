@@ -65,6 +65,8 @@ def sample_workbook() -> Workbook:
     sheet.merge_cells("F14:F15")
     sheet["F18"] = "Глубокие генеративные модели (Deep Generative Models)\nЧат курса"
     sheet["F18"].fill = PatternFill(start_color="FFE6E0EC", end_color="FFE6E0EC", fill_type="solid")
+    sheet["F19"] = "Глубокие генеративные модели (Deep Generative Models)\nЗачет"
+    sheet["F19"].fill = PatternFill(start_color="FFD9EAD3", end_color="FFD9EAD3", fill_type="solid")
     return wb
 
 
@@ -95,18 +97,26 @@ def test_pair_time(timetable_file: ScheduleParser):
 
 
 def test_find_time_in_cell(timetable_file: ScheduleParser):
-    cell_value = "Машинное обучение на больших данных (Big Data ML)\nЧат курса"
+    cell_value = "Машинное обучение на больших данных (Big Data ML)"
     cleaned, start, end = timetable_file._find_time_in_cell(cell_value)
-    assert cleaned == "Машинное обучение на больших данных (Big Data ML)\nЧат курса"
+    assert cleaned == "Машинное обучение на больших данных (Big Data ML)"
     assert start is None
     assert end is None
 
 
 def test_find_key_words_in_cell(timetable_file: ScheduleParser):
-    cell_value = "Глубокие генеративные модели (Deep Generative Models)\nЧат курса"
+    cell_value = "Глубокие генеративные модели (Deep Generative Models)"
     cleaned, keyword = timetable_file._find_key_words_in_cell(cell_value)
-    assert cleaned == "Глубокие генеративные модели (Deep Generative Models)\nЧат курса"
+    assert cleaned == "Глубокие генеративные модели (Deep Generative Models)"
     assert keyword is None
+
+
+async def test_removes_keyword_from_title(timetable_file: ScheduleParser):
+    timetable_file.settings.keywords = ["Зачет"]
+    cell_title = timetable_file.sheet["F19"].value
+    title, keyword = timetable_file._find_key_words_in_cell(cell_title)
+    assert title == "Глубокие генеративные модели (Deep Generative Models)"
+    assert keyword == "Зачет"
 
 
 def test_process_cell(timetable_file: ScheduleParser):
