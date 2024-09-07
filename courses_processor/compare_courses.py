@@ -7,7 +7,7 @@ timetable_file = "Расписание.xlsx"
 preselection_file = "Таблица предвыборности.xlsx"
 
 
-def standardize_course_name(course):
+def standardize_course_name(course: str) -> str | None:
     if not isinstance(course, str):
         return None
 
@@ -83,24 +83,24 @@ def standardize_course_name(course):
     return course
 
 
-def timetable_parser(timetable_filename: str):
-    df = pd.read_excel(timetable_filename, sheet_name="Расписание")
-    timetable = df.iloc[2:, 5:10].to_numpy().flatten()
+def timetable_parser(timetable_filename: str) -> set[str]:
+    timetable_df = pd.read_excel(timetable_filename, sheet_name="Расписание")
+    timetable = timetable_df.iloc[2:, 5:10].to_numpy().flatten()
     t = pd.Series(timetable)
     full_courses = set(t[pd.notna(t)].tolist())
     return set(filter(None, map(standardize_course_name, full_courses)))
 
 
-def preselection_parser(preselection_filename: str, preselection_params):
-    df = pd.read_excel(preselection_filename, sheet_name=preselection_params["name"])
-    courses_row = df.iloc[1, 4:-5]
+def preselection_parser(preselection_filename: str, preselection_params: dict[str, str]) -> set[str]:
+    preselection_df = pd.read_excel(preselection_filename, sheet_name=preselection_params["name"])
+    courses_row = preselection_df.iloc[1, 4:-5]
     courses = set(courses_row.tolist())
     return set(filter(None, map(standardize_course_name, courses)))
 
 
 def notion_parser(notion_filename: str) -> set[str]:
-    df = pd.read_csv(notion_filename)
-    courses = df["Курсы"].tolist()
+    notion_df = pd.read_csv(notion_filename)
+    courses = notion_df["Курсы"].tolist()
     standardized_courses = []
     for course in map(standardize_course_name, courses):
         if isinstance(course, list):
@@ -110,7 +110,7 @@ def notion_parser(notion_filename: str) -> set[str]:
     return set(standardized_courses)
 
 
-def main(course_folder: str, preselection_params):
+def main(course_folder: str, preselection_params: dict[str, str]) -> tuple[set[str], set[str], set[str]]:
     notion_courses = notion_parser(course_folder + notion_file)
     timetable_courses = timetable_parser(course_folder + timetable_file)
     preselection_courses = preselection_parser(course_folder + preselection_file, preselection_params)

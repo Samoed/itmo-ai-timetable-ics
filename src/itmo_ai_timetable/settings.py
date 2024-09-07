@@ -1,5 +1,3 @@
-from typing import Any
-
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -25,7 +23,7 @@ class Settings(BaseSettings):
     timezone: str = "Europe/Moscow"
 
     @property
-    def database_settings(self) -> Any:
+    def database_settings(self) -> dict[str, str | int]:
         return {
             "database": self.postgres_db,
             "user": self.postgres_user,

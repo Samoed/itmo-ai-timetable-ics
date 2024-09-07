@@ -15,7 +15,7 @@ class SessionManager:
     def __new__(cls) -> "SessionManager":
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance._initialize()
+            cls._instance._initialize()  # noqa: SLF001
         return cls._instance
 
     def _initialize(self) -> None:
@@ -41,7 +41,7 @@ class SessionManager:
 
 def with_async_session(func: Callable[..., Any]) -> Callable[..., Any]:
     @wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:  # noqa: ANN401
         if "session" in kwargs:
             return await func(*args, **kwargs)
         session_maker = SessionManager().session_maker

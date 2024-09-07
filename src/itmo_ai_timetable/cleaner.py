@@ -24,8 +24,8 @@ def course_name_cleaner(course: str) -> str | None:
         ),
         "Симулятор DS от Karpov.courses": "Симулятор DS от Karpov.Courses",
         "DS симулятор от Karpov.courses": "Симулятор DS от Karpov.Courses",
-        # appears in only course description
-        # "Программирование на С++": ["C++ Lite", "C++ Hard"], # noqa: RUF003
+        # appears in only course description, but this function only uses for preselection and timetable
+        # "Программирование на С++": ["C++ Lite", "C++ Hard"],
         "Uplift-моделирование": "UPLIFT-моделирование",
         "Продвинутое A/B-тестирование": "Продвинутое А/B - тестирование",
         "А/В тестирование и Reliable ML": "А/В тестирование",

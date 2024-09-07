@@ -22,7 +22,7 @@ from tests.utils import make_alembic_config
 def postgres() -> str:
     settings = Settings()
 
-    tmp_name = ".".join([uuid4().hex, "pytest"])
+    tmp_name = f"{uuid4().hex}.pytest"
     settings.postgres_db = tmp_name
     environ["POSTGRES_DB"] = tmp_name
 
@@ -57,17 +57,13 @@ def alembic_config(postgres) -> Config:
 
 @pytest.fixture
 def alembic_engine(postgres):
-    """
-    Override this fixture to provide pytest-alembic powered tests with a database handle.
-    """
+    """Override this fixture to provide pytest-alembic powered tests with a database handle."""
     return create_async_engine(postgres, echo=True)
 
 
 @pytest.fixture
 async def _migrated_postgres(postgres, alembic_config: Config):
-    """
-    Проводит миграции.
-    """
+    """Проводит миграции."""
     await run_async_upgrade(alembic_config, postgres)
 
 

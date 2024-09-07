@@ -99,7 +99,9 @@ class Class(Base):
     end_time: Mapped[datetime]
     class_type: Mapped[str] = mapped_column(nullable=True)
     class_status_id: Mapped[int] = mapped_column(
-        ForeignKey("class_status.id"), nullable=False, default=get_class_status_id(ClassStatus.need_to_add)
+        ForeignKey("class_status.id"),
+        nullable=False,
+        default=get_class_status_id(ClassStatus.need_to_add),
     )
     gcal_event_id: Mapped[str] = mapped_column(nullable=True)
 

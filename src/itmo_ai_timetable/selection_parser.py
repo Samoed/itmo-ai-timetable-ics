@@ -1,9 +1,10 @@
 from collections import defaultdict
 
 import openpyxl
-from cleaner import course_name_cleaner
 from openpyxl.cell import MergedCell
 from openpyxl.utils import column_index_from_string
+
+from itmo_ai_timetable.cleaner import course_name_cleaner
 
 
 class SelectionParser:
@@ -15,7 +16,7 @@ class SelectionParser:
         first_select_column: str,
         last_select_column: str,
         name_column: str = "A",
-    ):
+    ) -> None:
         self.workbook = openpyxl.load_workbook(filepath)
         self.sheet = self.workbook[sheet_name]
         self.course_row = course_row
@@ -24,7 +25,7 @@ class SelectionParser:
         self.name_column = name_column
         self.data_start_row = course_row + 1
 
-    def parse(self) -> dict[str, list[str]]:
+    def parse(self) -> dict[str, list[str | None]]:
         courses = self._get_courses()
         return self._match_names_to_courses(courses)
 
@@ -33,7 +34,7 @@ class SelectionParser:
         for cell in self.sheet[self.course_row]:
             if isinstance(cell, MergedCell):
                 if cell.column <= column_index_from_string(
-                    self.start_column
+                    self.start_column,
                 ) or cell.column >= column_index_from_string(self.end_column):
                     break
                 raise ValueError(f"Cell {cell} is merged")
@@ -47,7 +48,7 @@ class SelectionParser:
                 courses.append((cell.column_letter, cell.value))
         return courses
 
-    def _match_names_to_courses(self, courses: list[tuple[str, str]]) -> dict[str, list[str]]:
+    def _match_names_to_courses(self, courses: list[tuple[str, str]]) -> dict[str, list[str | None]]:
         matches = defaultdict(list)
         for row in self.sheet.iter_rows(min_row=self.data_start_row, min_col=1, max_col=1):
             name = row[0].value

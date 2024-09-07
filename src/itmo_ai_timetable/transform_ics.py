@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ics import Calendar, Event  # type: ignore
+from ics import Calendar, Event  # type: ignore[attr-defined]
 
 from itmo_ai_timetable.schemes import Pair
 

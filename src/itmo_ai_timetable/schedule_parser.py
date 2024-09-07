@@ -103,7 +103,7 @@ class ScheduleParser:
                         name=title,
                         pair_type=pair_type,
                         link=link,
-                    )
+                    ),
                 )
         return pairs
 

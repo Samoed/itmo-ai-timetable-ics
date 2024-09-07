@@ -124,7 +124,7 @@ async def test_add_classes_new_course(session: AsyncSession):
             end_time=end_time,
             pair_type="Lecture",
             link=None,
-        )
+        ),
     ]
 
     await Repository.add_classes(classes, session=session)
@@ -160,7 +160,7 @@ async def test_add_classes_existing_course(session: AsyncSession):
             end_time=end_time,
             pair_type="Lecture",
             link=None,
-        )
+        ),
     ]
 
     await Repository.add_classes(classes, session=session)
@@ -198,7 +198,7 @@ async def test_add_classes_update_existing(session: AsyncSession):
             end_time=end_time,
             pair_type="Lab",
             link=None,
-        )
+        ),
     ]
 
     await Repository.add_classes(classes, session=session)
@@ -235,7 +235,7 @@ async def test_add_classes_delete_existing(session: AsyncSession):
             end_time=datetime(2023, 1, 1, 17, 30, tzinfo=tzinfo),
             pair_type="Seminar",
             link=None,
-        )
+        ),
     ]
 
     await Repository.add_classes(classes, session=session)

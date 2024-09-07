@@ -23,7 +23,9 @@ class Repository:
 
     @staticmethod
     async def get_existing_classes(
-        course_id: int, synced_status: ClassStatusTable, session: AsyncSession
+        course_id: int,
+        synced_status: ClassStatusTable,
+        session: AsyncSession,
     ) -> Sequence[Class]:
         query = select(Class).filter(and_(Class.course_id == course_id, Class.class_status == synced_status))
         result = await session.execute(query)
@@ -78,7 +80,7 @@ class Repository:
     @with_async_session
     async def get_or_create_user(user_name: str, course_number: int, *, session: AsyncSession) -> User:
         query = await session.execute(
-            select(User).filter(and_(User.user_real_name == user_name, User.studying_course == course_number))
+            select(User).filter(and_(User.user_real_name == user_name, User.studying_course == course_number)),
         )
         user = query.scalar()
         if user is None:
@@ -90,9 +92,8 @@ class Repository:
     @staticmethod
     @with_async_session
     async def create_matching(selected: dict[str, list[str]], course_number: int, *, session: AsyncSession) -> None:
-        """
-
-        :param selected: contains pairs of names of users and courses he selected
+        """:param selected: contains pairs of names of users and courses he selected
+        :param course_number: number of course
         :param session:
         :return:
         """

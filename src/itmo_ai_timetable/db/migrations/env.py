@@ -75,7 +75,6 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-
     connectable = config.attributes.get("connection", None)
 
     if connectable is None:
