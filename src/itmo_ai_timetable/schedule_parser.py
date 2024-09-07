@@ -7,6 +7,7 @@ from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.worksheet.merge import MergedCellRange
 from openpyxl.worksheet.worksheet import Worksheet
 
+from itmo_ai_timetable.cleaner import course_name_cleaner
 from itmo_ai_timetable.logger import get_logger
 from itmo_ai_timetable.schemes import Pair
 from itmo_ai_timetable.settings import Settings
@@ -15,21 +16,23 @@ logger = get_logger(__name__)
 
 
 class ScheduleParser:
-    def __init__(self, path: str, sheet: int) -> None:
+    def __init__(self, path: str, sheet: str) -> None:
         self.settings = Settings()
         self.timezone = tz.gettz(self.settings.timezone)
         self.sheet = self._load_workbook(path, sheet)
 
-    def _load_workbook(self, path: str, sheet: int) -> Worksheet:
+    def _load_workbook(self, path: str, sheet: str) -> Worksheet:
         logger.info("Open file %s", path)
-        wb = openpyxl.load_workbook(path)
-        return wb.worksheets[sheet]
+        workbook = openpyxl.load_workbook(path)
+        return workbook[sheet]
 
     def parse(self) -> list[Pair]:
         logger.info("Start parse")
         pairs = []
         for day_cell in self._get_days():
             day = self._get_day(day_cell)
+            if day is None:
+                continue
             pairs.extend(self._parse_day(day, day_cell))
         logger.info("End parse")
         return pairs
@@ -41,10 +44,12 @@ class ScheduleParser:
             if cell_range.min_col == self.settings.days_column == cell_range.max_col
         ]
 
-    def _get_day(self, day_cell: MergedCellRange) -> datetime:
+    def _get_day(self, day_cell: MergedCellRange) -> datetime | None:
         day = self._get_first_cell_from_range(day_cell).value
+        if day is None:
+            return None
         if not isinstance(day, datetime):
-            raise ValueError(f"Day should be datetime, got {type(day)}")
+            raise ValueError(f"Day should be datetime, got {type(day)} in cell range {day_cell} with value {day}")
         day = day.astimezone(self.timezone)
         self._validate_day(day, day_cell)
         return day
@@ -91,11 +96,13 @@ class ScheduleParser:
             if cell.value is None or cell.value == "":
                 continue
             title, pair_type, link = self._process_cell(cell)
-            title, parsed_pair_start, parsed_pair_end = self._find_time_in_cell(title)
-            if parsed_pair_start and parsed_pair_end:
-                pair_start = pair_start.replace(hour=parsed_pair_start[0], minute=parsed_pair_start[1])
-                pair_end = pair_end.replace(hour=parsed_pair_end[0], minute=parsed_pair_end[1])
-            if title:
+
+            # currently there no time in cells
+            # title, parsed_pair_start, parsed_pair_end = self._find_time_in_cell(title)
+            # if parsed_pair_start and parsed_pair_end:
+            #     pair_start = pair_start.replace(hour=parsed_pair_start[0], minute=parsed_pair_start[1])
+            #     pair_end = pair_end.replace(hour=parsed_pair_end[0], minute=parsed_pair_end[1])
+            if title and title not in self.settings.courses_to_skip:
                 pairs.append(
                     Pair(
                         start_time=pair_start,
@@ -118,6 +125,7 @@ class ScheduleParser:
         link = cell.hyperlink.target if cell.hyperlink else None
         cell_title = self._clean_cell_value(cell)
         cell_title, key_word = self._find_key_words_in_cell(cell_title)
+        cell_title = course_name_cleaner(cell_title)
 
         return cell_title, key_word, link
 
@@ -155,7 +163,7 @@ class ScheduleParser:
         "Публичные выступления 1 / Финансовая грамотность 3 17:00 - 19:15" should be 17:00 and 19:15
         """
         cell = cell.strip()
-        if not cell:
+        if not cell or ("-" not in cell and ":" not in cell):
             return cell, None, None
 
         start_time = end_time = None
@@ -166,7 +174,7 @@ class ScheduleParser:
             try:
                 hour, minute = map(int, time.split(":"))
             except ValueError as e:
-                raise ValueError(f"Invalid time format in cell: {time}") from e
+                raise ValueError(f"Invalid time format in cell: {cell}") from e
 
             if start_time is None:
                 start_time = (hour, minute)

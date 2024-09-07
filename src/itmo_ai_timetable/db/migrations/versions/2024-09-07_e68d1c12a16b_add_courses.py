@@ -104,6 +104,7 @@ def upgrade() -> None:
         "Цифровая обработка сигналов (Digital Signal Processing)",
         "Этика искусственного интеллекта",
         "Хакатон",
+        "Бизнес аналитика",
     ]
     op.bulk_insert(table, [{"name": course} for course in courses])
 

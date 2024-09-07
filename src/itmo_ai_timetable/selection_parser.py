@@ -25,7 +25,7 @@ class SelectionParser:
         self.name_column = name_column
         self.data_start_row = course_row + 1
 
-    def parse(self) -> dict[str, list[str | None]]:
+    def parse(self) -> dict[str, list[str]]:
         courses = self._get_courses()
         return self._match_names_to_courses(courses)
 
@@ -48,7 +48,7 @@ class SelectionParser:
                 courses.append((cell.column_letter, cell.value))
         return courses
 
-    def _match_names_to_courses(self, courses: list[tuple[str, str]]) -> dict[str, list[str | None]]:
+    def _match_names_to_courses(self, courses: list[tuple[str, str]]) -> dict[str, list[str]]:
         matches = defaultdict(list)
         for row in self.sheet.iter_rows(min_row=self.data_start_row, min_col=1, max_col=1):
             name = row[0].value

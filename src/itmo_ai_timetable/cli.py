@@ -27,9 +27,17 @@ def create_args() -> argparse.Namespace:
         help="Путь к файлу excel",
         default="Расписание 1 курс весна 2024.xlsx",
         type=str,
+        required=True,
     )
-    schedule_parser.add_argument("--output_path", help="Папка для экспорта ics", default="ics", type=str)
-    schedule_parser.add_argument("--sheet", help="Страница с расписанием в excel файле", default=0, type=int)
+    schedule_parser.add_argument("--output_path", help="Папка для экспорта ics", type=str)
+    schedule_parser.add_argument("--sheet_name", help="Страница с расписанием в excel файле", type=str)
+    schedule_parser.add_argument(
+        "--db",
+        help="Сохранить результат в db",
+        action=argparse.BooleanOptionalAction,
+        type=bool,
+        default=False,
+    )
 
     selection_parser = subparsers.add_parser(SubparserName.SELECTION, help="Обработка excel с выборностью")
     selection_parser.add_argument(
@@ -37,8 +45,9 @@ def create_args() -> argparse.Namespace:
         help="Путь к файлу excel",
         default="Таблица предвыборности осень 2024 (2 курс).xlsx",
         type=str,
+        required=True,
     )
-    selection_parser.add_argument("--output_path", help="Папка для экспорта ics", default="ics", type=str)
+    selection_parser.add_argument("--output_path", help="Папка для экспорта", default="ics", type=str)
     selection_parser.add_argument("--sheet_name", help="Страница с расписанием в excel файле", type=str)
     selection_parser.add_argument("--course_row", help="Строка с заголовками", type=int)
     selection_parser.add_argument("--first_select_column", help="Первый столбец с выборностью (AA)", type=str)
@@ -65,8 +74,10 @@ async def main() -> None:
         Path.mkdir(output_dir)
     match args.subparser_name:
         case SubparserName.SCHEDULE:
-            schedule = ScheduleParser(args.filepath, args.sheet_num).parse()
-            export_ics(schedule, output_path)
+            schedule = ScheduleParser(args.filepath, args.sheet_name).parse()
+            if args.db:
+                _ = await Repository.add_classes(schedule)
+            export_ics(schedule, output_dir)
         case SubparserName.SELECTION:
             results = SelectionParser(
                 args.filepath,

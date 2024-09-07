@@ -22,6 +22,8 @@ class Settings(BaseSettings):
 
     timezone: str = "Europe/Moscow"
 
+    courses_to_skip: list[str] = Field(["Выходной", "Demoday 12:00-15:30"], description="Courses to skip")
+
     @property
     def database_settings(self) -> dict[str, str | int]:
         return {

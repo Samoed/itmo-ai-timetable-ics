@@ -106,7 +106,8 @@ allowed-confusables = ["а", "с", "е", "З", "о", "г", "х", "у", "А", "С
 "tests/*.py" = ["S", "PLR2004", "ERA", "D", "ANN", "SLF"]
 "src/itmo_ai_timetable/db/migrations/versions/*.py" = ["N999"]
 "courses_processor/*.py" = ["PTH", "T201", "PLW2901", "RUF003", "INP001"]
-"src/itmo_ai_timetable/gcal.py" = ["ERA"]
+"src/itmo_ai_timetable/gcal.py" = ["ERA001"]
+"src/itmo_ai_timetable/schedule_parser.py" = ["ERA001"]
 
 [tool.ruff.lint.isort]
 known-first-party = ["itmo_ai_timetable"]

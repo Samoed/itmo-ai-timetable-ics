@@ -22,6 +22,6 @@ def export_ics(pairs: list[Pair], path: Path) -> None:
                 description=pair.link,
             )
             c.events.add(e)
-
-        with Path.open(path / f"{course}.ics", "w") as f:
+        course_file_name = course.replace("/", "-")
+        with Path.open(path / f"{course_file_name}.ics", "w") as f:
             f.writelines(c.serialize())
