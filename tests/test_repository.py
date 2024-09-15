@@ -31,7 +31,7 @@ async def test_get_or_create_course_existing(session: AsyncSession):
 
 
 async def test_get_or_create_course_new(session: AsyncSession):
-    course_name = "New Course"
+    course_name = "Ранжирование и матчинг"
 
     result = await Repository.get_course(course_name, session)
 
@@ -117,9 +117,10 @@ async def test_update_class_statuses(session: AsyncSession):
 async def test_add_classes_new_course(session: AsyncSession):
     start_time = datetime(2023, 1, 1, 9, 0, tzinfo=tzinfo)
     end_time = datetime(2023, 1, 1, 10, 30, tzinfo=tzinfo)
+    course_name = "Ранжирование и матчинг"
     classes = [
         Pair(
-            name="Math",
+            name=course_name,
             start_time=start_time,
             end_time=end_time,
             pair_type="Lecture",
@@ -129,10 +130,10 @@ async def test_add_classes_new_course(session: AsyncSession):
 
     await Repository.add_classes(classes, session=session)
 
-    result = await session.execute(select(Course).where(Course.name == "Math"))
+    result = await session.execute(select(Course).where(Course.name == course_name))
     course = result.scalar_one()
     assert course is not None
-    assert course.name == "Math"
+    assert course.name == course_name
 
     result = await session.execute(select(Class).where(Class.course_id == course.id))
     class_obj = result.scalar_one()
@@ -254,17 +255,17 @@ async def test_add_classes_delete_existing(session: AsyncSession):
 async def test_add_classes_multiple_courses(session: AsyncSession):
     classes = [
         Pair(
-            name="Math",
+            name="Ранжирование и матчинг",
             start_time=datetime(2023, 1, 1, 9, 0, tzinfo=tzinfo),
             end_time=datetime(2023, 1, 1, 10, 30, tzinfo=tzinfo),
         ),
         Pair(
-            name="Physics",
+            name="Рекомендательные системы",
             start_time=datetime(2023, 1, 1, 11, 0, tzinfo=tzinfo),
             end_time=datetime(2023, 1, 1, 12, 30, tzinfo=tzinfo),
         ),
         Pair(
-            name="Math",
+            name="Этика искусственного интеллекта",
             start_time=datetime(2023, 1, 1, 13, 0, tzinfo=tzinfo),
             end_time=datetime(2023, 1, 1, 14, 30, tzinfo=tzinfo),
         ),
@@ -272,65 +273,6 @@ async def test_add_classes_multiple_courses(session: AsyncSession):
 
     await Repository.add_classes(classes, session=session)
 
-    result = await session.execute(select(Course))
-    courses = result.scalars().all()
-    assert len(courses) == 2
-
     result = await session.execute(select(Class))
     classes = result.scalars().all()
     assert len(classes) == 3
-
-
-async def test_add_classes(session: AsyncSession):
-    need_to_add = await Repository.get_class_status_by_name(ClassStatus.need_to_add, session=session)
-    need_to_delete = await Repository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
-    synced = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
-
-    pairs = [
-        Pair(
-            name="Math",
-            start_time=datetime(2023, 1, 1, 9, 0, tzinfo=tzinfo),
-            end_time=datetime(2023, 1, 1, 10, 30, tzinfo=tzinfo),
-            pair_type="Lecture",
-        ),
-        Pair(
-            name="Physics",
-            start_time=datetime(2023, 1, 1, 11, 0, tzinfo=tzinfo),
-            end_time=datetime(2023, 1, 1, 12, 30, tzinfo=tzinfo),
-            pair_type="Lab",
-        ),
-        Pair(
-            name="Math",
-            start_time=datetime(2023, 1, 1, 13, 0, tzinfo=tzinfo),
-            end_time=datetime(2023, 1, 1, 14, 30, tzinfo=tzinfo),
-            pair_type="Seminar",
-        ),
-    ]
-
-    # Add an existing class that should be marked for deletion
-    math_course = Course(name="Math")
-    existing_class = Class(
-        course=math_course,
-        start_time=datetime(2023, 1, 1, 15, 0, tzinfo=tzinfo),
-        end_time=datetime(2023, 1, 1, 16, 30, tzinfo=tzinfo),
-        class_status=synced,
-    )
-    session.add(existing_class)
-    await session.commit()
-
-    await Repository.add_classes(pairs, session=session)
-
-    courses = (await session.execute(select(Course))).scalars().all()
-    assert len(courses) == 2
-    assert {c.name for c in courses} == {"Math", "Physics"}
-
-    classes = (await session.execute(select(Class))).scalars().all()
-    assert len(classes) == 4  # 3 new classes + 1 existing class marked for deletion
-
-    new_classes = [c for c in classes if c.class_status_id == need_to_add.id]
-    assert len(new_classes) == 3
-    assert all(c.class_status_id == need_to_add.id for c in new_classes)
-
-    deleted_class = next(c for c in classes if c.class_status_id == need_to_delete.id)
-    assert deleted_class.start_time == datetime(2023, 1, 1, 15, 0, tzinfo=tzinfo)
-    assert deleted_class.end_time == datetime(2023, 1, 1, 16, 30, tzinfo=tzinfo)

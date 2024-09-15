@@ -97,11 +97,10 @@ class ScheduleParser:
                 continue
             title, pair_type, link = self._process_cell(cell)
 
-            # currently there no time in cells
-            # title, parsed_pair_start, parsed_pair_end = self._find_time_in_cell(title)
-            # if parsed_pair_start and parsed_pair_end:
-            #     pair_start = pair_start.replace(hour=parsed_pair_start[0], minute=parsed_pair_start[1])
-            #     pair_end = pair_end.replace(hour=parsed_pair_end[0], minute=parsed_pair_end[1])
+            title, parsed_pair_start, parsed_pair_end = self._find_time_in_cell(title)
+            if parsed_pair_start and parsed_pair_end:
+                pair_start = pair_start.replace(hour=parsed_pair_start[0], minute=parsed_pair_start[1])
+                pair_end = pair_end.replace(hour=parsed_pair_end[0], minute=parsed_pair_end[1])
             if title and title not in self.settings.courses_to_skip:
                 pairs.append(
                     Pair(

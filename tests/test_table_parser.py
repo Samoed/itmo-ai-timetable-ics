@@ -67,6 +67,8 @@ def sample_workbook() -> Workbook:
     sheet["F18"].fill = PatternFill(start_color="FFE6E0EC", end_color="FFE6E0EC", fill_type="solid")
     sheet["F19"] = "Глубокие генеративные модели (Deep Generative Models)\nЗачет"
     sheet["F19"].fill = PatternFill(start_color="FFD9EAD3", end_color="FFD9EAD3", fill_type="solid")
+    sheet["F20"] = "C++ hard\n18:30 - 20:00"
+    sheet["F20"].fill = PatternFill(start_color="FFD9EAD3", end_color="FFD9EAD3", fill_type="solid")
     return wb
 
 
@@ -75,7 +77,7 @@ def timetable_file(tmp_path: Path, sample_workbook: Workbook) -> ScheduleParser:
     file_path = tmp_path / "test_timetable.xlsx"
     # file_path = "test_timetable.xlsx"
     sample_workbook.save(file_path)
-    return ScheduleParser(str(file_path), 0)
+    return ScheduleParser(str(file_path), "Sheet")
 
 
 def test_init(timetable_file: ScheduleParser):
@@ -119,6 +121,15 @@ async def test_removes_keyword_from_title(timetable_file: ScheduleParser):
     assert keyword == "Зачет"
 
 
+async def test_time_from_name(timetable_file: ScheduleParser):
+    timetable_file.settings.keywords = ["Зачет"]
+    cell_title = timetable_file.sheet["F20"].value
+    title, start_time, end_time = timetable_file._find_time_in_cell(cell_title)
+    assert title == "C++ hard"
+    assert start_time == (18, 30)
+    assert end_time == (20, 0)
+
+
 def test_process_cell(timetable_file: ScheduleParser):
     cell = timetable_file.sheet["F11"]
     title, keyword, link = timetable_file._process_cell(cell)
@@ -130,7 +141,7 @@ def test_process_cell(timetable_file: ScheduleParser):
 def test_parse(timetable_file: ScheduleParser):
     now = datetime.now(tz=timezone)
     pairs = timetable_file.parse()
-    assert len(pairs) == 5
+    assert len(pairs) == 6
     assert isinstance(pairs[0], Pair)
     assert pairs[0].name == "Безопасность ИИ Чат курса"
     assert pairs[0].start_time == datetime(now.year, now.month, 5, 17, 0, tzinfo=timezone)
