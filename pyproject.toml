@@ -18,6 +18,7 @@ dependencies = [
     "sqlalchemy>=2.0.32",
     "alembic>=1.13.2",
     "asyncpg>=0.29.0",
+    "python-telegram-bot[job-queue]>=21.5",
 ]
 scripts = { cli="src.itmo_ai_timetable.cli:main" }
 

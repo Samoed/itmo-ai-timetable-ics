@@ -9,7 +9,7 @@ from itmo_ai_timetable.db.session_manager import with_async_session
 from itmo_ai_timetable.schemes import ClassStatus, Pair
 
 
-class Repository:
+class DBRepository:
     @staticmethod
     @with_async_session
     async def get_class_status_by_name(class_status: ClassStatus, *, session: AsyncSession) -> ClassStatusTable:
@@ -20,6 +20,19 @@ class Repository:
     async def get_course(course_name: str, session: AsyncSession) -> Course | None:
         query = await session.execute(select(Course).filter(Course.name == course_name))
         return query.scalar()
+
+    @staticmethod
+    @with_async_session
+    async def get_courses(*, session: AsyncSession) -> Sequence[Course]:
+        query = select(Course)
+        result = await session.execute(query)
+        return result.scalars().all()
+
+    @staticmethod
+    @with_async_session
+    async def update_courses(courses: list[Course], *, session: AsyncSession) -> None:
+        session.add_all(courses)
+        await session.commit()
 
     @staticmethod
     async def get_existing_classes(
@@ -46,8 +59,8 @@ class Repository:
     @staticmethod
     @with_async_session
     async def add_classes(classes: list[Pair], *, session: AsyncSession) -> list[str]:
-        synced_status = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
-        need_to_delete_status = await Repository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
+        synced_status = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
+        need_to_delete_status = await DBRepository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
 
         courses_classes = defaultdict(list)
         for c in classes:
@@ -55,21 +68,21 @@ class Repository:
 
         not_found_courses = []
         for course_name, course_classes in courses_classes.items():
-            course = await Repository.get_course(course_name, session)
+            course = await DBRepository.get_course(course_name, session)
 
             if course is None:
                 not_found_courses.append(course_name)
                 continue
 
-            existing_classes = await Repository.get_existing_classes(course.id, synced_status, session)
+            existing_classes = await DBRepository.get_existing_classes(course.id, synced_status, session)
             existing_class_identifiers = {(c.start_time, c.end_time) for c in existing_classes}
             new_class_identifiers = {(c.start_time, c.end_time) for c in course_classes}
 
             classes_to_add = [c for c in course_classes if (c.start_time, c.end_time) not in existing_class_identifiers]
             classes_to_delete = [c for c in existing_classes if (c.start_time, c.end_time) not in new_class_identifiers]
 
-            await Repository.update_class_statuses(classes_to_delete, need_to_delete_status)
-            new_classes = await Repository.create_new_classes(course.id, classes_to_add)
+            await DBRepository.update_class_statuses(classes_to_delete, need_to_delete_status)
+            new_classes = await DBRepository.create_new_classes(course.id, classes_to_add)
 
             session.add_all(new_classes)
 
@@ -92,15 +105,16 @@ class Repository:
     @staticmethod
     @with_async_session
     async def create_matching(selected: dict[str, list[str]], course_number: int, *, session: AsyncSession) -> None:
-        """:param selected: contains pairs of names of users and courses he selected
+        """
+        :param selected: contains pairs of names of users and courses he selected
         :param course_number: number of course
         :param session:
         :return:
         """
         for user_name, courses in selected.items():
-            user = await Repository.get_or_create_user(user_name, course_number, session=session)
+            user = await DBRepository.get_or_create_user(user_name, course_number, session=session)
             for course_name in courses:
-                course = await Repository.get_course(course_name, session)
+                course = await DBRepository.get_course(course_name, session)
                 # Fetch the user's current courses
                 await session.refresh(user, ["courses"])
 
@@ -111,3 +125,10 @@ class Repository:
                     user.courses.append(course)
 
                 await session.commit()
+
+    @staticmethod
+    @with_async_session
+    async def set_gcal_id_to_course(course_name: str, gcal_id: str, *, session: AsyncSession) -> None:
+        course = await DBRepository.get_course(course_name, session)
+        course.gcal_id = gcal_id
+        await session.commit()

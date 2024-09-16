@@ -165,3 +165,5 @@ ics/
 /db/
 *.json
 *.csv
+client_secret_*
+token.pickle

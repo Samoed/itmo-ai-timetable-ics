@@ -5,16 +5,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from itmo_ai_timetable.db.base import Class, ClassStatusTable, Course
-from itmo_ai_timetable.repository import Repository
+from itmo_ai_timetable.repositories.db import DBRepository
 from itmo_ai_timetable.schemes import ClassStatus, Pair
 
 tzinfo = tz.gettz("Europe/Moscow")
 
 
 async def test_get_class_status_by_name(session: AsyncSession):
-    synced_status = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
+    synced_status = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
 
-    result = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
+    result = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
     assert result.id == synced_status.id
 
 
@@ -24,7 +24,7 @@ async def test_get_or_create_course_existing(session: AsyncSession):
     session.add(existing_course)
     await session.commit()
 
-    result = await Repository.get_course(course_name, session)
+    result = await DBRepository.get_course(course_name, session)
 
     assert result.id == existing_course.id
     assert result.name == course_name
@@ -33,7 +33,7 @@ async def test_get_or_create_course_existing(session: AsyncSession):
 async def test_get_or_create_course_new(session: AsyncSession):
     course_name = "Ранжирование и матчинг"
 
-    result = await Repository.get_course(course_name, session)
+    result = await DBRepository.get_course(course_name, session)
 
     assert result.id is not None
     assert result.name == course_name
@@ -45,8 +45,8 @@ async def test_get_or_create_course_new(session: AsyncSession):
 
 
 async def test_get_existing_classes(session: AsyncSession):
-    synced = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
-    need_to_delete = await Repository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
+    synced = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
+    need_to_delete = await DBRepository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
 
     course = Course(name="Test Course")
     session.add(course)
@@ -76,7 +76,7 @@ async def test_get_existing_classes(session: AsyncSession):
     await session.commit()
 
     # Act
-    result = await Repository.get_existing_classes(course.id, synced, session)
+    result = await DBRepository.get_existing_classes(course.id, synced, session)
 
     # Assert
     assert len(result) == 2
@@ -84,8 +84,8 @@ async def test_get_existing_classes(session: AsyncSession):
 
 
 async def test_update_class_statuses(session: AsyncSession):
-    synced = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
-    need_to_delete = await Repository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
+    synced = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
+    need_to_delete = await DBRepository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
     course = Course(name="Test Course")
     session.add(course)
     await session.flush()
@@ -107,7 +107,7 @@ async def test_update_class_statuses(session: AsyncSession):
     session.add_all(classes)
     await session.commit()
 
-    await Repository.update_class_statuses(classes, need_to_delete)
+    await DBRepository.update_class_statuses(classes, need_to_delete)
     await session.commit()
 
     for class_obj in classes:
@@ -128,7 +128,7 @@ async def test_add_classes_new_course(session: AsyncSession):
         ),
     ]
 
-    await Repository.add_classes(classes, session=session)
+    await DBRepository.add_classes(classes, session=session)
 
     result = await session.execute(select(Course).where(Course.name == course_name))
     course = result.scalar_one()
@@ -164,7 +164,7 @@ async def test_add_classes_existing_course(session: AsyncSession):
         ),
     ]
 
-    await Repository.add_classes(classes, session=session)
+    await DBRepository.add_classes(classes, session=session)
 
     result = await session.execute(select(Class).where(Class.course_id == course.id))
     class_obj = result.scalar_one()
@@ -178,7 +178,7 @@ async def test_add_classes_update_existing(session: AsyncSession):
     session.add(course)
     await session.commit()
 
-    synced_status = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
+    synced_status = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
 
     start_time = datetime(2023, 1, 1, 13, 0, tzinfo=tzinfo)
     end_time = datetime(2023, 1, 1, 14, 30, tzinfo=tzinfo)
@@ -202,7 +202,7 @@ async def test_add_classes_update_existing(session: AsyncSession):
         ),
     ]
 
-    await Repository.add_classes(classes, session=session)
+    await DBRepository.add_classes(classes, session=session)
 
     result = await session.execute(select(Class).where(Class.course_id == course.id))
     class_obj = result.scalar_one()
@@ -216,9 +216,9 @@ async def test_add_classes_delete_existing(session: AsyncSession):
     course = Course(name="Biology")
     session.add(course)
     await session.commit()
-    synced_status = await Repository.get_class_status_by_name(ClassStatus.synced, session=session)
-    added_status = await Repository.get_class_status_by_name(ClassStatus.need_to_add, session=session)
-    deleted_status = await Repository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
+    synced_status = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
+    added_status = await DBRepository.get_class_status_by_name(ClassStatus.need_to_add, session=session)
+    deleted_status = await DBRepository.get_class_status_by_name(ClassStatus.need_to_delete, session=session)
 
     existing_class = Class(
         course_id=course.id,
@@ -239,7 +239,7 @@ async def test_add_classes_delete_existing(session: AsyncSession):
         ),
     ]
 
-    await Repository.add_classes(classes, session=session)
+    await DBRepository.add_classes(classes, session=session)
 
     result = await session.execute(select(Class).where(Class.course_id == course.id))
     classes = result.scalars().all()
@@ -271,7 +271,7 @@ async def test_add_classes_multiple_courses(session: AsyncSession):
         ),
     ]
 
-    await Repository.add_classes(classes, session=session)
+    await DBRepository.add_classes(classes, session=session)
 
     result = await session.execute(select(Class))
     classes = result.scalars().all()

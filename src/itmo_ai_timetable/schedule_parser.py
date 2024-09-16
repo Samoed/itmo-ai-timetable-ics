@@ -1,7 +1,9 @@
 from collections.abc import Generator, Iterable
 from datetime import datetime
+from pathlib import Path
 
 import openpyxl
+import requests
 from dateutil import tz
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.worksheet.merge import MergedCellRange
@@ -18,11 +20,20 @@ logger = get_logger(__name__)
 class ScheduleParser:
     def __init__(self, path: str, sheet: str) -> None:
         self.settings = Settings()
-        self.timezone = tz.gettz(self.settings.timezone)
+        self.timezone = tz.gettz(self.settings.tz)
         self.sheet = self._load_workbook(path, sheet)
+
+    def _download_excel(self, url: str) -> Path:
+        request = requests.get(url, timeout=5)
+        file_path = Path("file.xlsx")
+        with file_path.open("wb") as file:
+            file.write(request.content)
+        return file_path
 
     def _load_workbook(self, path: str, sheet: str) -> Worksheet:
         logger.info("Open file %s", path)
+        if path.startswith("http"):
+            path = str(self._download_excel(path))
         workbook = openpyxl.load_workbook(path)
         return workbook[sheet]
 
