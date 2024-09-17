@@ -24,9 +24,9 @@ class Settings(BaseSettings):
 
     courses_to_skip: list[str] = Field(["Выходной", "Demoday 12:00-15:30"], description="Courses to skip")
 
-    course_1_excel_calendar_id: HttpUrl = Field(description="Link to course 1 calendar")
+    course_1_excel_calendar_id: str = Field(description="Link to course 1 calendar")
     course_1_list_name: str = Field("Расписание", description="Name of course 1 list")
-    course_2_excel_calendar_id: HttpUrl = Field(description="Link to course 2 calendar")
+    course_2_excel_calendar_id: str = Field(description="Link to course 2 calendar")
     course_2_list_name: str = Field("Расписание", description="Name of course 2 list")
 
     google_credentials_path: FilePath = Field(
@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     google_token_path: FilePath = Field(description="Path to google token file")
 
     tg_bot_token: str = Field(description="Telegram bot token")
-    admin_chat_id: int = Field(description="Admin chat id")
+    admin_chat_id: str = Field(description="Admin chat id")
 
     course_info_url: HttpUrl = Field(description="Course info url")
 

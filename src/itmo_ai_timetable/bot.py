@@ -5,9 +5,6 @@ from datetime import time
 
 import pytz
 from logger import get_logger
-from repositories.repository import Repository
-from schedule_parser import ScheduleParser
-from settings import Settings
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import (
@@ -15,6 +12,11 @@ from telegram.ext import (
     CommandHandler,
     ContextTypes,
 )
+
+from itmo_ai_timetable.repositories.calendar import CalendarRepository
+from itmo_ai_timetable.repositories.db import DBRepository
+from itmo_ai_timetable.schedule_parser import ScheduleParser
+from itmo_ai_timetable.settings import Settings
 
 logger = get_logger(__name__)
 settings = Settings()
@@ -26,21 +28,36 @@ async def sync_courses_table(context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.info(f"Start sync {list_name}")
         parser = ScheduleParser(excel_url, list_name)
         pairs = parser.parse()
-        not_found = await Repository.add_classes(pairs)
+        not_found = await DBRepository.add_classes(pairs)
         if not_found:
             logger.warning(f"Classes not found: {not_found}")
-            not_found_str = [f"- {pair.start_time} {pair.end_time} {pair.name}\n" for pair in not_found]
+            not_found_str = [f"- {pair}\n" for pair in not_found]
             await context.bot.send_message(
                 settings.admin_chat_id,
                 f"Classes not found: {not_found_str}\nКурс: {i}",
             )
-            return
+            continue
         logger.info(f"End sync {list_name}")
     await context.bot.send_message(settings.admin_chat_id, "Sync finished table")
 
 
-async def update_classes_calendar(context: ContextTypes.DEFAULT_TYPE) -> None:
-    pass
+async def update_classes_calendar(context: ContextTypes.DEFAULT_TYPE) -> None:  # noqa: ARG001
+    courses = await DBRepository.get_courses()
+    calendar_repo = CalendarRepository()
+
+    for course in courses:
+        if course.name not in ["Этика искусственного интеллекта", "Продвинутый курс научных исследований"]:
+            continue
+        if course.timetable_id is None:
+            course.timetable_id = calendar_repo.get_or_create_calendar(course.name)
+            await DBRepository.update_courses([course])
+        classes = await DBRepository.get_unsynced_classes_for_course(course)
+        for class_ in classes:
+            class_.gcal_event_id = calendar_repo.add_class_to_calendar(
+                course.timetable_id, course.name, class_.start_time, class_.end_time
+            )
+            class_.class_status_id = 5
+        await DBRepository.update_classes(classes)
 
 
 async def ping(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:  # noqa: ARG001
@@ -80,7 +97,7 @@ def add_jobs(application: Application, time_zone_str: str) -> None:
     if application.job_queue is None:
         raise ValueError("Job queue is None")
     application.job_queue.run_daily(sync_courses_table, time=time(8, tzinfo=time_zone))
-    application.job_queue.run_daily(update_classes_calendar, time=time(hour=8, minute=5, tzinfo=time_zone))
+    application.job_queue.run_repeating(update_classes_calendar, interval=60)
 
 
 def main() -> None:

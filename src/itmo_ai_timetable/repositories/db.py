@@ -35,6 +35,12 @@ class DBRepository:
         await session.commit()
 
     @staticmethod
+    @with_async_session
+    async def update_classes(classes: list[Class], *, session: AsyncSession) -> None:
+        session.add_all(classes)
+        await session.commit()
+
+    @staticmethod
     async def get_existing_classes(
         course_id: int,
         synced_status: ClassStatusTable,
@@ -132,3 +138,11 @@ class DBRepository:
         course = await DBRepository.get_course(course_name, session)
         course.gcal_id = gcal_id
         await session.commit()
+
+    @staticmethod
+    @with_async_session
+    async def get_unsynced_classes_for_course(course: Course, *, session: AsyncSession) -> Sequence[Class]:
+        synced_status = await DBRepository.get_class_status_by_name(ClassStatus.synced, session=session)
+        query = select(Class).filter(and_(Class.course_id == course.id, Class.class_status != synced_status))
+        result = await session.execute(query)
+        return result.scalars().all()
